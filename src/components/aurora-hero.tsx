@@ -29,7 +29,7 @@ export function AuroraHero() {
         <Enter index={0}>
           <Badge variant="secondary" className="animate-float gap-1.5">
             <SparklesIcon className="size-3" />
-            Учебный гид · 8 разделов · интерактивные демо
+            Простым языком · без технического образования
           </Badge>
         </Enter>
 
@@ -41,16 +41,15 @@ export function AuroraHero() {
 
         <Enter index={2} className="mt-6 w-full">
           <p className="mx-auto max-w-2xl text-base text-pretty text-muted-foreground sm:text-lg">
-            Полный гид: от базовых понятий до современных методов защиты данных.
-            Разберём триаду CIA, типичные угрозы и то, что действительно работает
-            на практике.
+            Что это такое, от кого надо защищаться и что сделать прямо сейчас —
+            без сложных терминов и технического образования.
           </p>
         </Enter>
 
         <Enter index={3} className="mt-8 flex w-full flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          {/* Основной CTA ведёт к секции «Понятия». */}
+          {/* Основной CTA ведёт к блоку «С чего начать». */}
           <Button asChild size="lg" className="group w-full sm:w-auto">
-            <Link href="#concepts">
+            <Link href="#start">
               Начать изучение
               <ArrowRightIcon
                 data-icon="inline-end"
@@ -59,7 +58,7 @@ export function AuroraHero() {
             </Link>
           </Button>
           <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
-            <Link href="#demos">Открыть демо защиты</Link>
+            <Link href="#glossary">Словарик терминов</Link>
           </Button>
         </Enter>
 

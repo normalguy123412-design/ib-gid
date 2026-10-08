@@ -31,6 +31,18 @@ const ROW_CYCLE = 512
 /** Длина светящейся полосы пакета. */
 const PACKET_LEN = 76
 
+/**
+ * Подписи, которые едут вместе с пакетами данных — как на референсном сайте
+ * (там это слой .world__labels). Текст короткий и понятный новичку,
+ * чтобы фон не выглядел случайным набором символов.
+ */
+const SCENE_LABELS: { text: string; packet: number; tone: "accent" | "ok" }[] = [
+  { text: "пароль", packet: 1, tone: "accent" },
+  { text: "двухфакторный код", packet: 4, tone: "ok" },
+  { text: "шифрование", packet: 7, tone: "accent" },
+  { text: "резервная копия", packet: 10, tone: "ok" },
+]
+
 type Palette = {
   tileFill: string
   tileStroke: string
@@ -83,6 +95,8 @@ type Packet = {
   x: number
   /** Позиция по вертикали в пикселях; значение меняется при прокрутке мира. */
   y: number
+  /** Экранная координата Y, вычисляется в drawPackets. */
+  screenY: number
   speed: number
   dir: 1 | -1
   alpha: number
@@ -98,6 +112,10 @@ type Node = {
 
 export function SecurityWorld() {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null)
+  /** DOM-подписи, следующие за пакетами: индекс пакета + сам элемент. */
+  const labelsRef = React.useRef<
+    { packetIndex: number; el: HTMLSpanElement | null }[]
+  >([])
   const { resolvedTheme } = useTheme()
   const dark = resolvedTheme !== "light"
 
@@ -153,6 +171,7 @@ export function SecurityWorld() {
       return {
         x: a * width,
         y: b * 2400,
+        screenY: 0,
         speed: 28 + a * 40,
         dir: b > 0.5 ? 1 : -1,
         alpha: 0.3 + b * 0.5,
@@ -268,6 +287,8 @@ export function SecurityWorld() {
         if (p.x > width + PACKET_LEN) p.x = -PACKET_LEN
 
         const y = wrapY(p.y - camY * LAYER_SPEED[0])
+        // Сохраняем экранную координату: по ней едут подписи слоя labels.
+        p.screenY = y
         const x1 = p.x
         const x0 = p.x - PACKET_LEN * p.dir
 
@@ -308,6 +329,22 @@ export function SecurityWorld() {
       ctx.globalAlpha = 1
     }
 
+    /** Слой подписей: элементы следуют за пакетами, как .world__labels. */
+    const moveLabels = () => {
+      const nodes = labelsRef.current
+      if (!nodes) return
+      for (const { packetIndex, el } of nodes) {
+        if (!el) continue
+        const p = packets[packetIndex % packets.length]
+        if (!p) continue
+        // Небольшой вертикальный сдвиг, чтобы подпись не резала сам пакет.
+        el.style.transform = `translate3d(${p.x}px, ${p.screenY - 16}px, 0)`
+        // Гаснем у краёв экрана, чтобы подписи не резались о границы.
+        const edge = Math.min(p.x / 120, (width - p.x) / 120, 1)
+        el.style.opacity = String(Math.max(0, Math.min(1, edge)) * 0.9)
+      }
+    }
+
     /** Один полный кадр сцены. */
     const render = (dt: number, time: number) => {
       camY += (14 + boost * 110) * dt
@@ -323,6 +360,7 @@ export function SecurityWorld() {
       drawScan(time)
       drawPackets(dt)
       drawNodes(time)
+      moveLabels()
 
       // Мир плавно замедляется после быстрой прокрутки.
       boost *= 0.94
@@ -358,7 +396,6 @@ export function SecurityWorld() {
       render(0, 0)
       return cleanup
     }
-
     let frame = 0
     let last = performance.now()
     let time = 0
@@ -392,13 +429,36 @@ export function SecurityWorld() {
   }, [dark])
 
   return (
-    // Подложка и свет сверху заданы CSS-градиентом на обёртке: canvas
-    // остаётся прозрачным и только рисует сцену, поэтому кадры не наслаиваются.
     <div
       aria-hidden
-      className="pointer-events-none fixed inset-0 z-0 animate-world-in bg-[radial-gradient(ellipse_70%_55%_at_50%_-10%,var(--world-glow),transparent_70%)]"
+      className="pointer-events-none fixed inset-0 z-0 animate-world-in"
     >
+      {/* Подложка и свет сверху — статичный CSS-градиент на обёртке, чтобы
+          canvas оставался прозрачным и кадры не наслаивались. */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_-10%,var(--world-glow),transparent_70%)]" />
+
       <canvas ref={canvasRef} className="block size-full" />
+
+      {/* Подписи, которые едут вместе с пакетами данных. */}
+      <div className="absolute inset-0 overflow-hidden">
+        {SCENE_LABELS.map((label, i) => (
+          <span
+            key={label.text}
+            ref={(el) => {
+              labelsRef.current[i] = { packetIndex: label.packet, el }
+            }}
+            className={
+              "absolute left-0 top-0 whitespace-nowrap rounded-md border bg-background/70 px-2 py-1 font-mono text-[0.65rem] backdrop-blur-sm will-change-transform " +
+              (label.tone === "accent"
+                ? "border-sky-500/40 text-sky-600 dark:text-sky-300"
+                : "border-emerald-500/40 text-emerald-600 dark:text-emerald-300")
+            }
+            style={{ opacity: 0 }}
+          >
+            {label.text}
+          </span>
+        ))}
+      </div>
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge"
+import { Parallax } from "@/components/parallax"
 import { Reveal } from "@/components/reveal"
 import { cn } from "cn"
 
@@ -46,23 +47,26 @@ export function SectionHeader({
   align?: "left" | "center"
 }) {
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-3",
-        align === "center" ? "items-center text-center" : "max-w-2xl"
-      )}
-    >
-      <Badge variant="outline" className="font-mono text-[0.7rem] uppercase">
-        {eyebrow}
-      </Badge>
-      <h2 className="font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-        {title}
-      </h2>
-      {description ? (
-        <p className="text-base text-pretty text-muted-foreground">
-          {description}
-        </p>
-      ) : null}
-    </div>
+    // Заголовок слегка «отрывается» от прокрутки — как на референсном сайте.
+    <Parallax speed={0.28} className="flex flex-col gap-3">
+      <div
+        className={cn(
+          "flex flex-col gap-3",
+          align === "center" ? "items-center text-center" : "max-w-2xl"
+        )}
+      >
+        <Badge variant="outline" className="font-mono text-[0.7rem] uppercase">
+          {eyebrow}
+        </Badge>
+        <h2 className="font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+          {title}
+        </h2>
+        {description ? (
+          <p className="text-base text-pretty text-muted-foreground">
+            {description}
+          </p>
+        ) : null}
+      </div>
+    </Parallax>
   )
 }

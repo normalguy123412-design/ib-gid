@@ -4,9 +4,9 @@ import { PinInputDemo } from "@/components/pin-input-demo"
 import { Card, CardContent } from "@/components/ui/card"
 import { ServerCrashIcon, TerminalIcon } from "lucide-react"
 
-const snippet = `// Проверка одноразового кода на сервере (концепт)
+const snippet = `// Как сервер проверяет код из приложения (упрощённо)
 const isValid = await totp.verify({
-  token: code,            // 6 цифр из приложения
+  token: code,            // 6 цифр из телефона
   secret: user.totpSecret,
   window: 1,              // допуск +/- 30 секунд
 })
@@ -31,9 +31,9 @@ export function SecurityDemos() {
   return (
     <Section id="demos">
       <SectionHeader
-        eyebrow="04 — Демо"
-        title="Потрогайте защиту руками"
-        description="Два интерактивных примера: расчёт стойкости пароля и проверка кода второго фактора. Всё считается локально, без отправки данных."
+        eyebrow="05 — Демо"
+        title="Попробуйте руками"
+        description="Два примера, которые можно потрогать: проверка надёжности пароля и настоящий вход по шестизначному коду. Всё считается прямо в браузере, ничего никуда не отправляется."
       />
 
       <div className="mt-10 grid gap-4 sm:mt-14 lg:grid-cols-2">

@@ -23,9 +23,9 @@ export function FaqWithCategories() {
   return (
     <Section id="faq">
       <SectionHeader
-        eyebrow="05 — FAQ"
+        eyebrow="07 — FAQ"
         title="Частые вопросы"
-        description="Короткие ответы на то, что спрашивают чаще всего. Если вопроса нет — начните с разделов «Понятия» и «Защита»."
+        description="Короткие ответы без терминов. Если чего-то не нашлось — начните с блока «С чего начать» или загляните в словарик."
       />
 
       <Tabs
