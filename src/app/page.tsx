@@ -1,3 +1,4 @@
+import { AuroraHero } from "@/components/aurora-hero"
 import { Checklist } from "@/components/checklist"
 import { CommonMistakes } from "@/components/common-mistakes"
 import { CoreFeatures } from "@/components/core-features"
@@ -14,7 +15,6 @@ import { SecurityDemos } from "@/components/security-demos"
 import { SecurityWorld } from "@/components/security-world"
 import { SiteFooter } from "@/components/site-footer"
 import { StartHere } from "@/components/start-here"
-import { VideoScrollHero } from "@/components/video-scroll-hero"
 
 /**
  * Одностраничный сайт «ИБ-Гид».
@@ -34,8 +34,8 @@ export default function Home() {
 
       {/* relative + z-10 — контент поверх фонового canvas. */}
       <main className="relative z-10 flex-1">
-        {/* 0. Первый экран: ролик раскрывается при прокрутке, CTA → #start */}
-        <VideoScrollHero />
+        {/* 0. Первый экран (hero) с CTA «Начать изучение» → #start */}
+        <AuroraHero />
         {/* 1. #about — цель, задачи, автор и источники работы */}
         <ProjectGoal />
         {/* 2. #start — три шага для тех, кто совсем новичок */}
