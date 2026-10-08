@@ -50,6 +50,7 @@ export function Section({
   return (
     <section
       id={id}
+      data-panel=""
       style={{ width: `${screens * 100}vw` }}
       className={cn("relative h-full shrink-0 overflow-hidden", className)}
     >

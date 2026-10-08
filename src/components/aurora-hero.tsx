@@ -21,6 +21,7 @@ export function AuroraHero() {
   return (
     <section
       id="top"
+      data-panel=""
       className="relative isolate h-full w-screen shrink-0 overflow-hidden pt-14 pb-20 sm:pt-16 sm:pb-24"
     >
       {/* Затемнение для читаемости текста. */}

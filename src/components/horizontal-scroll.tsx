@@ -81,20 +81,36 @@ export function HorizontalScroll({
 }) {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const trackRef = React.useRef<HTMLDivElement>(null)
-  const [maxX, setMaxX] = React.useState(0)
+  /**
+   * Геометрия ленты в пикселях.
+   *
+   * Высота экрана хранится явно, а не через `100svh`: единицы viewport
+   * и `innerHeight` иногда расходятся, и из-за этого сдвиг ленты переставал
+   * быть один к одному с прокруткой — переходы уезжали мимо цели.
+   */
+  const [metrics, setMetrics] = React.useState({
+    viewportWidth: 0,
+    viewportHeight: 0,
+    maxX: 0,
+  })
+  const maxX = metrics.maxX
   const jumpedToHash = React.useRef(false)
 
-  // Замер длины ленты. Идёт в useLayoutEffect, чтобы высота контейнера
-  // верная до первой отрисовки — иначе страница дёрнулась бы вниз.
+  // Замер геометрии ленты. Идёт в useLayoutEffect, чтобы высота контейнера
+  // была верной до первой отрисовки — иначе страница дёрнулась бы вниз.
   React.useLayoutEffect(() => {
     const measure = () => {
       const track = trackRef.current
       if (!track) return
-      // Именно clientWidth, а не innerWidth: innerWidth включает полосу
-      // прокрутки документа, и из-за этого лента уезжала бы на её ширину
-      // дальше нужного — в конце пути справа зияла бы пустая полоса.
-      const viewport = document.documentElement.clientWidth
-      setMaxX(Math.max(0, track.scrollWidth - viewport))
+      // Именно clientWidth/clientHeight, а не innerWidth/innerHeight:
+      // последние включают полосы прокрутки. Из-за этого лента уезжала
+      // дальше нужного, а в конце пути справа зияла пустая полоса.
+      const size = document.documentElement
+      setMetrics({
+        viewportWidth: size.clientWidth,
+        viewportHeight: size.clientHeight,
+        maxX: Math.max(0, track.scrollWidth - size.clientWidth),
+      })
     }
 
     measure()
@@ -128,21 +144,22 @@ export function HorizontalScroll({
   const scrollToSection = React.useCallback(
     (id: string, smooth = true) => {
       const target = document.getElementById(id)
-      const container = containerRef.current
-      if (!target || !container) return
+      if (!target || maxX === 0) return
 
-      // Панели лежат внутри трека, который `relative`, поэтому offsetLeft
-      // отсчитывается от начала ленты, а не от страницы.
-      const left = target.offsetLeft
-      const ratio = maxX > 0 ? Math.min(1, Math.max(0, left / maxX)) : 0
-      const pageMax = Math.max(1, container.offsetHeight - window.innerHeight)
-
+      // Контейнер выше высоты экрана ровно на maxX, поэтому диапазон
+      // прокрутки страницы тоже maxX — и один пиксель прокрутки сдвигает
+      // ленту ровно на пиксель. Значит нужная позиция равна смещению
+      // панели от начала ленты, без всяких долей и пересчётов.
+      //
+      // Раньше здесь стояло `левая граница / maxX * (высота − экран)`,
+      // и эта формула ломалась: высоты считались разными способами
+      // (`svh` и `innerHeight`), из-за чего переход уезжал на следующий
+      // раздел — тем дальше, чем дальше была цель.
       window.scrollTo({
-        top: ratio * pageMax,
+        top: target.offsetLeft,
         behavior: smooth ? "smooth" : "auto",
       })
-      // Хэш меняем вручную: `behavior: smooth` иначе не даёт браузеру
-      // начать собственный вертикальный переход.
+      // Хэш меняем вручную: иначе браузер начнёт собственный переход.
       window.history.replaceState(null, "", `#${id}`)
     },
     [maxX]
@@ -175,6 +192,50 @@ export function HorizontalScroll({
     scrollToSection(id, false)
   }, [maxX, scrollToSection])
 
+  /**
+   * Шаг по панелям клавишами-стрелками.
+   *
+   * Без этого приходилось бы подкручивать колёсико точно до нужного
+   * раздела. Нажатие вправо переходит на следующую панель, влево — на
+   * предыдущую, то есть ровно на один шаг ленты.
+   */
+  React.useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return
+      // В полях ввода стрелки должны двигать курсор, а не сайт.
+      const target = event.target as HTMLElement | null
+      if (
+        target?.closest?.("input, textarea, select, [contenteditable='true']")
+      ) {
+        return
+      }
+
+      const panels = Array.from(
+        trackRef.current?.querySelectorAll<HTMLElement>("[data-panel]") ?? []
+      )
+      if (!panels.length) return
+
+      // Текущая панель — последняя, чей левый край уже пройден.
+      const position = window.scrollY
+      let index = 0
+      panels.forEach((panel, i) => {
+        if (panel.offsetLeft <= position + 1) index = i
+      })
+
+      const next =
+        event.key === "ArrowRight"
+          ? Math.min(index + 1, panels.length - 1)
+          : Math.max(index - 1, 0)
+
+      if (next === index) return
+      event.preventDefault()
+      scrollToSection(panels[next].id)
+    }
+
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [scrollToSection])
+
   const value = React.useMemo(
     () => ({ scrollToSection, maxX, progress: scrollYProgress }),
     [scrollToSection, maxX, scrollYProgress]
@@ -182,14 +243,17 @@ export function HorizontalScroll({
 
   return (
     <HorizontalScrollContext.Provider value={value}>
+      {/* Контейнер выше экрана ровно на ширину ленты: благодаря этому
+          диапазон прокрутки страницы равен maxX, а сдвиг ленты идёт
+          один к одному с прокруткой. */}
       <div
         ref={containerRef}
         className="relative"
-        style={{ height: `calc(100svh + ${maxX}px)` }}
+        style={{ height: `${metrics.viewportHeight + maxX}px` }}
       >
         <div
           className="sticky top-0 overflow-hidden"
-          style={{ height: "100svh" }}
+          style={{ height: `${metrics.viewportHeight}px` }}
         >
           {background}
 
