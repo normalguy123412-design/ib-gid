@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react"
+﻿import type { LucideIcon } from "lucide-react"
 import {
   Binary,
   BookOpen,
@@ -47,10 +47,6 @@ export const site = {
  * а `id` каждой секции должен равняться `href` — иначе переход не сработает.
  */
 export const navItems: NavItem[] = [
-  {
-    title: "О проекте",
-    href: "#about",
-  },
   {
     title: "Понятия",
     href: "#concepts",

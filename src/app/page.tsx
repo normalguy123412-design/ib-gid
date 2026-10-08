@@ -1,4 +1,4 @@
-import { AuroraHero } from "@/components/aurora-hero"
+﻿import { AuroraHero } from "@/components/aurora-hero"
 import { Checklist } from "@/components/checklist"
 import { CommonMistakes } from "@/components/common-mistakes"
 import { CoreFeatures } from "@/components/core-features"
@@ -10,7 +10,6 @@ import { HorizontalScroll } from "@/components/horizontal-scroll"
 import { HowItWorks } from "@/components/how-it-works"
 import { IfItHappens } from "@/components/if-it-happens"
 import { NumbersStrip } from "@/components/numbers-strip"
-import { ProjectGoal } from "@/components/project-goal"
 import { ScrollRail } from "@/components/scroll-rail"
 import { SecurityDemos } from "@/components/security-demos"
 import { SiteFooter } from "@/components/site-footer"
@@ -42,8 +41,6 @@ export default function Home() {
         <main className="relative z-10 flex h-full w-max">
           {/* 0. Первый экран (hero) с CTA «Начать изучение» → #start */}
           <AuroraHero />
-          {/* 1. #about — цель, задачи, автор и источники работы */}
-          <ProjectGoal />
           {/* 2. #start — три шага для тех, кто совсем новичок */}
           <StartHere />
           {/* 3. #concepts — что такое ИБ и три главных свойства */}
