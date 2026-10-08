@@ -66,7 +66,11 @@ export function HorizontalScroll({ children }: { children: React.ReactNode }) {
     const measure = () => {
       const track = trackRef.current
       if (!track) return
-      setMaxX(Math.max(0, track.scrollWidth - window.innerWidth))
+      // Именно clientWidth, а не innerWidth: innerWidth включает полосу
+      // прокрутки документа, и из-за этого лента уезжала бы на её ширину
+      // дальше нужного — в конце пути справа зияла бы пустая полоса.
+      const viewport = document.documentElement.clientWidth
+      setMaxX(Math.max(0, track.scrollWidth - viewport))
     }
 
     measure()

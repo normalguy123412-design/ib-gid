@@ -32,7 +32,11 @@ export function Section({
     <section
       id={id}
       className={cn(
-        "h-full w-screen shrink-0 overflow-y-auto border-r",
+        // Полоса прокрутки внутри панели спрятана: иначе у каждой из
+        // четырнадцати панелей торчал бы свой системный скроллбар и
+        // «полосатое» поле уходило далеко за край экрана. Сама
+        // прокрутка работает — колесо и свайп по панели.
+        "h-full w-screen shrink-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border-r",
         className
       )}
     >
