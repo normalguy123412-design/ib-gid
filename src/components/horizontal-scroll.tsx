@@ -54,7 +54,18 @@ export function useHorizontalScroll(): HorizontalScrollValue | null {
  * `100vw`: у разделов разная высота контента, и часть из них
  * прокручивается внутри своей панели.
  */
-export function HorizontalScroll({ children }: { children: React.ReactNode }) {
+export function HorizontalScroll({
+  children,
+  background,
+}: {
+  children: React.ReactNode
+  /**
+   * Фон, который едет вместе с лентой. Рендерится внутри липкого экрана,
+   * но вне трека, — чтобы фон видел тот же прогресс прокрутки и мог
+   * двигаться в ту же сторону, что и содержимое.
+   */
+  background?: React.ReactNode
+}) {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const trackRef = React.useRef<HTMLDivElement>(null)
   const [maxX, setMaxX] = React.useState(0)
@@ -167,6 +178,8 @@ export function HorizontalScroll({ children }: { children: React.ReactNode }) {
           className="sticky top-0 overflow-hidden"
           style={{ height: "100svh" }}
         >
+          {background}
+
           <motion.div
             ref={trackRef}
             onClick={handleClick}

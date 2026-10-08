@@ -30,11 +30,11 @@ import { StartHere } from "@/components/start-here"
 export default function Home() {
   return (
     <>
-      {/* Анимированный фон на весь экран: z-0, весь контент лежит выше. */}
-      <SecurityWorld />
+      {/* Анимированный фон на весь экран передаётся в ленту как background. */}
 
-      {/* Лента разделов: прокрутка вниз двигает её вправо. */}
-      <HorizontalScroll>
+      {/* Лента разделов: прокрутка вниз двигает её вправо. Фон передан
+          внутрь, чтобы он двигался вместе с содержимым, а не стоял. */}
+      <HorizontalScroll background={<SecurityWorld />}>
         {/* main остаётся landmark'ом и растягивается вдоль всей ленты,
             чтобы разделы были его прямыми флекс-потомками. */}
         <main className="relative z-10 flex h-full w-max">

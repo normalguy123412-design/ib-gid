@@ -1,7 +1,9 @@
 "use client"
 
 import * as React from "react"
+import { motion, motionValue, useTransform } from "motion/react"
 import { useTheme } from "next-themes"
+import { useHorizontalScroll } from "@/components/horizontal-scroll"
 
 /**
  * ГЛОБАЛЬНЫЙ АНИМИРОВАННЫЙ ФОН — «Сетевой экран ИБ».
@@ -110,6 +112,19 @@ type Node = {
   period: number
 }
 
+/**
+ * Насколько далеко фон уезжает вправо за всю прокрутку, в долях ширины
+ * экрана. Меньше единицы — иначе справа показалась бы пустая полоса:
+ * сцена должна быть шире экрана ровно на столько, на сколько сдвинется.
+ */
+const BACKGROUND_TRAVEL = 0.3
+
+/**
+ * Заглушка прогресса для обычной вертикальной вёрстки: без ленты фон
+ * стоит на месте, как и раньше.
+ */
+const ZERO_PROGRESS = motionValue(0)
+
 export function SecurityWorld() {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null)
   /** DOM-подписи, следующие за пакетами: индекс пакета + сам элемент. */
@@ -118,6 +133,39 @@ export function SecurityWorld() {
   >([])
   const { resolvedTheme } = useTheme()
   const dark = resolvedTheme !== "light"
+  const horizontal = useHorizontalScroll()
+
+  /**
+   * Геометрия фона: полная ширина сцены и величина её сдвига.
+   *
+   * Сцена рисуется шире экрана, а затем двигается вправо в пределах
+   * добавленной ширины. Так фон всегда закрывает видимую область и
+   * при этом едет туда же, куда едет лента, — без пустой полосы.
+   */
+  const [scene, setScene] = React.useState({ width: 0, travel: 0 })
+
+  React.useEffect(() => {
+    const measure = () => {
+      // clientWidth, а не innerWidth: полоса прокрутки документа не должна
+      // попадать в расчёт и оставлять справа незакрытый край.
+      const viewport = document.documentElement.clientWidth
+      const travel = Math.round(viewport * BACKGROUND_TRAVEL)
+      setScene({ width: viewport + travel, travel })
+    }
+
+    measure()
+    window.addEventListener("resize", measure)
+    return () => window.removeEventListener("resize", measure)
+  }, [])
+
+  // Фон едет вправо по мере прокрутки. Если ленты нет (обычная вёрстка),
+  // подсказка нулевая и фон стоит на месте, как раньше.
+  const progress = horizontal?.progress
+  const backgroundX = useTransform(
+    progress ?? ZERO_PROGRESS,
+    [0, 1],
+    [0, scene.travel]
+  )
 
   React.useEffect(() => {
     const canvas = canvasRef.current
@@ -148,7 +196,9 @@ export function SecurityWorld() {
     let lastScrollY = 0
 
     const resize = () => {
-      width = window.innerWidth
+      // Ширина берётся из `scene`, а не из окна: сцена должна быть шире
+      // экрана на величину будущего сдвига.
+      width = scene.width || document.documentElement.clientWidth
       height = window.innerHeight
       // Ограничиваем DPR: на 3x-экранах рисовать втрое дороже без видимой пользы.
       dpr = Math.min(window.devicePixelRatio || 1, 2)
@@ -426,21 +476,27 @@ export function SecurityWorld() {
       document.removeEventListener("visibilitychange", onVisibility)
       cleanup()
     }
-  }, [dark])
+  }, [dark, scene.width])
 
   return (
+    // Обёртка обрезает сцену по краям экрана: она шире вьюпорта ровно
+    // на величину сдвига и «ездит» внутри этого запаса.
     <div
       aria-hidden
-      className="pointer-events-none fixed inset-0 z-0 animate-world-in"
+      className="pointer-events-none absolute inset-0 z-0 overflow-hidden animate-world-in"
     >
-      {/* Подложка и свет сверху — статичный CSS-градиент на обёртке, чтобы
-          canvas оставался прозрачным и кадры не наслаивались. */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_-10%,var(--world-glow),transparent_70%)]" />
+      <motion.div
+        className="absolute inset-y-0 left-0"
+        style={{ x: backgroundX, width: scene.width || undefined }}
+      >
+        {/* Подложка и свет сверху — статичный CSS-градиент на обёртке, чтобы
+            canvas оставался прозрачным и кадры не наслаивались. */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_-10%,var(--world-glow),transparent_70%)]" />
 
-      <canvas ref={canvasRef} className="block size-full" />
+        <canvas ref={canvasRef} className="block size-full" />
 
-      {/* Подписи, которые едут вместе с пакетами данных. */}
-      <div className="absolute inset-0 overflow-hidden">
+        {/* Подписи, которые едут вместе с пакетами данных. */}
+        <div className="absolute inset-0 overflow-hidden">
         {SCENE_LABELS.map((label, i) => (
           <span
             key={label.text}
@@ -458,7 +514,8 @@ export function SecurityWorld() {
             {label.text}
           </span>
         ))}
-      </div>
+        </div>
+      </motion.div>
     </div>
   )
 }
