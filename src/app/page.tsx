@@ -7,6 +7,7 @@ import { FeaturesBento } from "@/components/features-bento"
 import { Glossary } from "@/components/glossary"
 import { HowItWorks } from "@/components/how-it-works"
 import { NumbersStrip } from "@/components/numbers-strip"
+import { ProjectGoal } from "@/components/project-goal"
 import { ScrollRail } from "@/components/scroll-rail"
 import { SecurityDemos } from "@/components/security-demos"
 import { SecurityWorld } from "@/components/security-world"
@@ -33,25 +34,27 @@ export default function Home() {
       <main className="relative z-10 flex-1">
         {/* 0. Первый экран (hero) с CTA «Начать изучение» → #start */}
         <AuroraHero />
-        {/* 1. #start — три шага для тех, кто совсем новичок */}
+        {/* 1. #about — цель, задачи, автор и источники работы */}
+        <ProjectGoal />
+        {/* 2. #start — три шага для тех, кто совсем новичок */}
         <StartHere />
-        {/* 2. #concepts — что такое ИБ и три главных свойства */}
+        {/* 3. #concepts — что такое ИБ и три главных свойства */}
         <CoreFeatures />
-        {/* 3. #threats — бенто-сетка типов угроз и их классификация */}
+        {/* 4. #threats — бенто-сетка типов угроз и их классификация */}
         <FeaturesBento />
-        {/* 4. #defense — методы защиты и фреймворки */}
+        {/* 5. #defense — методы защиты и фреймворки */}
         <DefenseMethods />
-        {/* 5. #how — липкая схема пути запроса и пять шагов */}
+        {/* 6. #how — липкая схема пути запроса и пять шагов */}
         <HowItWorks />
-        {/* 6. #demos — 2FA и настройка безопасности аккаунта */}
+        {/* 7. #demos — 2FA и настройка безопасности аккаунта */}
         <SecurityDemos />
-        {/* 7. #glossary — расшифровка терминов простым языком */}
+        {/* 8. #glossary — расшифровка терминов простым языком */}
         <Glossary />
-        {/* 8. #numbers — коротко о главном в цифрах */}
+        {/* 9. #numbers — коротко о главном в цифрах */}
         <NumbersStrip stats={numbers} />
-        {/* 9. #checklist — три конкретных действия на сегодня */}
+        {/* 10. #checklist — три конкретных действия на сегодня */}
         <Checklist />
-        {/* 10. #faq — вопросы по темам */}
+        {/* 11. #faq — вопросы по темам */}
         <FaqWithCategories />
       </main>
 

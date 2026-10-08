@@ -48,6 +48,10 @@ export const site = {
  */
 export const navItems: NavItem[] = [
   {
+    title: "О проекте",
+    href: "#about",
+  },
+  {
     title: "Понятия",
     href: "#concepts",
     children: [
@@ -62,7 +66,8 @@ export const navItems: NavItem[] = [
     href: "#defense",
     children: [
       { title: "Четыре способа защиты", href: "#defense" },
-      { title: "Что делать на практике", href: "#demos" },
+      { title: "Путь запроса", href: "#how" },
+      { title: "Что делать на практике", href: "#checklist" },
     ],
   },
   { title: "Демо", href: "#demos" },
@@ -73,7 +78,7 @@ export const navItems: NavItem[] = [
 export const heroStats = [
   { value: "3", label: "главных свойства защиты" },
   { value: "5", label: "самых частых угроз" },
-  { value: "20+", label: "терминов в словарике" },
+  { value: "21", label: "термин в словарике" },
 ]
 
 /**
