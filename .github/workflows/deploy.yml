@@ -44,6 +44,10 @@ jobs:
 
       - name: Подготовить Pages
         uses: actions/configure-pages@v5
+        with:
+          # Включает Pages сам, если репозиторий ещё не настроен —
+          # иначе сборка падает с «Get Pages site failed».
+          enablement: true
 
       - name: Загрузить артефакт
         uses: actions/upload-pages-artifact@v3
