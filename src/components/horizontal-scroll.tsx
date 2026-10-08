@@ -1,12 +1,7 @@
-"use client"
+﻿"use client"
 
 import * as React from "react"
-import {
-  motion,
-  useScroll,
-  useTransform,
-  type MotionValue,
-} from "motion/react"
+import { motion, motionValue, type MotionValue } from "motion/react"
 
 type HorizontalScrollValue = {
   /**
@@ -126,41 +121,70 @@ export function HorizontalScroll({
     }
   }, [])
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  })
+  /**
+   * Положение ленты берётся напрямую из прокрутки страницы, а не из
+   * прогресса `useScroll`.
+   *
+   * С прогрессом сдвиг шёл через производную величину, у которой своя
+   * формула границ. Из-за этого «пиксель прокрутки» и «пиксель сдвига»
+   * переставали совпадать, и переход к разделу уезжал — тем дальше, чем
+   * дальше была цель: словарик открывался на «Угрозы», потом на
+   * «Защиту». Теперь соотношение тождественное — `x = -scrollY`, —
+   * поэтому переход к `offsetLeft` помахуться не может в принципе.
+   *
+   * Значение живёт в MotionValue, поэтому прокрутка не вызывает
+   * перерисовок React.
+   */
+  const trackX = React.useMemo(() => motionValue(0), [])
+  const progress = React.useMemo(() => motionValue(0), [])
 
-  // Сдвиг ленты влево ровно на ту величину, на которую лента длиннее экрана.
-  //
-  // `prefers-reduced-motion` здесь намеренно не трогаем. Сдвиг идёт без
-  // инерции и пружин — он связан с прокруткой один в один, без
-  // дорисовки и догоняющих анимаций. Если выключить его, лента останется
-  // неподвижной и обрезанной по краю экрана: до разделов дальше первого
-  // экрана будет невозможно добраться. Статичная альтернатива — вертикальная
-  // раскладка, но это уже другая вёрстка, а не отключение анимации.
-  const x = useTransform(scrollYProgress, [0, 1], [0, -maxX])
+  React.useEffect(() => {
+    let frame = 0
+
+    const update = () => {
+      frame = 0
+      const position = Math.max(0, Math.min(window.scrollY, maxX))
+      trackX.set(-position)
+      progress.set(maxX > 0 ? position / maxX : 0)
+    }
+
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update)
+    }
+
+    update()
+    window.addEventListener("scroll", onScroll, { passive: true })
+    window.addEventListener("resize", onScroll)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener("scroll", onScroll)
+      window.removeEventListener("resize", onScroll)
+    }
+  }, [maxX, trackX, progress])
+
+  // При изменении размеров держим ленту на текущей панели, а не сбрасываем
+  // на начало: иначе переезд окна на другой монитор сбрасывал бы позицию.
+  const wasResized = React.useRef(0)
+  React.useEffect(() => {
+    if (wasResized.current === 0) {
+      wasResized.current = 1
+      return
+    }
+    window.scrollTo({ top: window.scrollY })
+  }, [maxX])
 
   const scrollToSection = React.useCallback(
     (id: string, smooth = true) => {
       const target = document.getElementById(id)
       if (!target || maxX === 0) return
 
-      // Контейнер выше высоты экрана ровно на maxX, поэтому диапазон
-      // прокрутки страницы тоже maxX — и один пиксель прокрутки сдвигает
-      // ленту ровно на пиксель. Значит нужная позиция равна смещению
-      // панели от начала ленты, без всяких долей и пересчётов.
-      //
-      // Раньше здесь стояло `левая граница / maxX * (высота − экран)`,
-      // и эта формула ломалась: высоты считались разными способами
-      // (`svh` и `innerHeight`), из-за чего переход уезжал на следующий
-      // раздел — тем дальше, чем дальше была цель.
+      // Сдвиг ленты равен прокрутке один в один, поэтому нужная позиция
+      // равна смещению панели от начала ленты — без долей и пересчётов.
       window.scrollTo({
-        top: target.offsetLeft,
+        top: Math.min(target.offsetLeft, maxX),
         behavior: smooth ? "smooth" : "auto",
       })
-      // Хэш меняем вручную: иначе браузер начнёт собственный переход.
-      window.history.replaceState(null, "", `#${id}`)
+      if (id) window.history.replaceState(null, "", `#${id}`)
     },
     [maxX]
   )
@@ -264,8 +288,8 @@ export function HorizontalScroll({
   }, [maxX, scrollToOffset])
 
   const value = React.useMemo(
-    () => ({ scrollToSection, maxX, progress: scrollYProgress }),
-    [scrollToSection, maxX, scrollYProgress]
+    () => ({ scrollToSection, maxX, progress }),
+    [scrollToSection, maxX, progress]
   )
 
   return (
@@ -287,7 +311,7 @@ export function HorizontalScroll({
           <motion.div
             ref={trackRef}
             onClick={handleClick}
-            style={{ x }}
+            style={{ x: trackX }}
             className="relative z-10 flex h-full w-max will-change-transform"
           >
             {children}
