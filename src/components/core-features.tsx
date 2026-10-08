@@ -1,4 +1,4 @@
-import { QuoteIcon, ShieldPlusIcon } from "lucide-react"
+﻿import { QuoteIcon, ShieldPlusIcon } from "lucide-react"
 import { Section, SectionHeader } from "@/components/section"
 import {
   Card,
@@ -17,7 +17,7 @@ import { ciaTriad } from "@/lib/content"
  */
 export function CoreFeatures() {
   return (
-    <Section id="concepts">
+    <Section id="concepts" label="Понятия">
       <SectionHeader
         eyebrow="02 — Основные понятия"
         title="Что такое информационная безопасность"

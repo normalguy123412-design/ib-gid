@@ -1,4 +1,4 @@
-import { Section, SectionHeader } from "@/components/section"
+﻿import { Section, SectionHeader } from "@/components/section"
 import { AccountSecurity } from "@/components/account-security"
 import { PinInputDemo } from "@/components/pin-input-demo"
 import { Card, CardContent } from "@/components/ui/card"
@@ -29,7 +29,7 @@ await sessions.revokeOthers(user.id)` as const
  */
 export function SecurityDemos() {
   return (
-    <Section id="demos">
+    <Section id="demos" label="Демо">
       <SectionHeader
         eyebrow="05 — Демо"
         title="Попробуйте руками"

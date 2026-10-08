@@ -1,4 +1,4 @@
-import { Section, SectionHeader } from "@/components/section"
+﻿import { Section, SectionHeader } from "@/components/section"
 import {
   Card,
   CardContent,
@@ -17,7 +17,7 @@ import { ifItHappens } from "@/lib/content"
  */
 export function IfItHappens() {
   return (
-    <Section id="emergency">
+    <Section id="emergency" label="Если произошло">
       <SectionHeader
         eyebrow="07 — Если произошло"
         title="Первые шаги, когда неприятность уже случилась"

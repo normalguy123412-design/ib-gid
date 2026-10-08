@@ -25,10 +25,20 @@ import { cn } from "cn"
  */
 export function Section({
   id,
+  label,
   className,
   children,
 }: {
   id?: string
+  /**
+   * Крупная подпись на фоне панели.
+   *
+   * Она живёт внутри панели, а не отдельным слоем, поэтому едет вместе с
+   * содержимым сама: при прокрутке название раздела выходит из-за края
+   * и уходит в следующий. Никакой синхронизации с прокруткой не нужно —
+   * движение обеспечивает общий сдвиг ленты.
+   */
+  label?: string
   className?: string
   children: React.ReactNode
 }) {
@@ -40,6 +50,17 @@ export function Section({
         className
       )}
     >
+      {label ? (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 flex select-none items-center justify-center overflow-hidden"
+        >
+          <span className="font-heading text-[16vw] leading-none font-bold tracking-tight text-foreground/[0.055]">
+            {label}
+          </span>
+        </span>
+      ) : null}
+
       {/*
         Разделение панелей. Раньше здесь стояла рамка `border-r`, и при
         прокрутке её вертикальная линия проходила через весь экран —
@@ -51,7 +72,7 @@ export function Section({
         className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-background to-transparent"
       />
 
-      <div className="flex min-h-full w-full flex-col px-4 py-10 sm:px-6">
+      <div className="relative flex min-h-full w-full flex-col px-4 py-10 sm:px-6">
         <div className="mx-auto my-auto w-full max-w-6xl">
           <Reveal>{children}</Reveal>
         </div>

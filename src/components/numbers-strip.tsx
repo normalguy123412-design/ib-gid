@@ -24,7 +24,7 @@ type Stat = {
 
 export function NumbersStrip({ stats }: { stats: Stat[] }) {
   return (
-    <Section id="numbers" className="border-b">
+    <Section id="numbers" label="В цифрах">
       <Parallax speed={0.1}>
         <h2 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
           Коротко о главном в цифрах

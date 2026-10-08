@@ -16,7 +16,16 @@ export async function SiteFooter() {
 
   return (
     <footer className="relative z-10 h-full w-screen shrink-0 overflow-y-auto bg-background/70 pb-28 backdrop-blur-sm">
-      <div className="flex min-h-full w-full flex-col px-4 sm:px-6">
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 flex select-none items-center justify-center overflow-hidden"
+      >
+        <span className="font-heading text-[16vw] leading-none font-bold tracking-tight text-foreground/[0.055]">
+          Итог
+        </span>
+      </span>
+
+      <div className="relative flex min-h-full w-full flex-col px-4 sm:px-6">
         <div className="mx-auto my-auto w-full max-w-6xl">
         <div className="flex flex-col gap-8 py-12 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
           {/* Логотип и разделы. */}

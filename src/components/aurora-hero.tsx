@@ -11,11 +11,11 @@ import { Enter } from "@/components/reveal"
 import { heroStats } from "@/lib/content"
 
 /**
- * HERO-секция: первый экран сайта.
+ * HERO-секция: первый экран сайта — первая панель горизонтальной ленты.
  *
- * Фон — не CSS-градиенты, а общий анимированный canvas-слой
- * (см. SecurityWorld). Здесь только лёгкое затемнение в верхней части,
- * чтобы заголовок читался поверх сцены.
+ * Фон всего сайта сплошной чёрный; на нём первая панель несёт крупную
+ * полупрозрачную подпись «ИБ-Гид». Здесь — лёгкое затемнение, чтобы
+ * заголовок читался поверх неё.
  */
 export function AuroraHero() {
   return (
@@ -28,6 +28,16 @@ export function AuroraHero() {
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-background/80 via-background/25 to-transparent"
       />
+
+      {/* Крупная подпись фона: едет вместе с панелью. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 flex select-none items-center justify-center overflow-hidden"
+      >
+        <span className="font-heading text-[16vw] leading-none font-bold tracking-tight text-foreground/[0.055]">
+          ИБ-Гид
+        </span>
+      </span>
 
       <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col items-center justify-center px-4 text-center sm:px-6">
         {/* Каскад появления: каждый следующий блок стартует с задержкой. */}

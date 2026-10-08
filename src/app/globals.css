@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -73,10 +73,6 @@
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  /* Мягкий свет над анимированным фоном (см. SecurityWorld). */
-  --world-glow: oklch(0.62 0.14 235 / 0.1);
-  /* Фоновая виньетка: затемняет края, чтобы текст в центре читался. */
-  --grid-vignette: oklch(0 0 0 / 0.22);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -88,7 +84,7 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(0 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -106,10 +102,6 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
-  /* Свет над фоном в тёмной теме — холоднее и заметнее. */
-  --world-glow: oklch(0.72 0.15 230 / 0.13);
-  /* На тёмном фоне виньетка глубже, чтобы края уходили в черноту. */
-  --grid-vignette: oklch(0 0 0 / 0.55);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -139,44 +131,16 @@
     background-color: var(--background);
   }
 
-  /* Фон body должен быть прозрачным, иначе он закроет сетку на html. */
+  /* Фон body должен быть прозрачным, иначе он закроет фон на html. */
   body {
     @apply text-foreground;
-  }
-
-  /*
-    Виньетка затемняет края, чтобы текст в центре читался.
-    Слой лежит на z-0: над сеткой и анимированным canvas, но под
-    содержимым — main поднят на z-10. Клики не перехватывает.
-  */
-  body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background: radial-gradient(
-      ellipse at 50% 45%,
-      transparent 50%,
-      var(--grid-vignette) 100%
-    );
   }
 }
 
 @theme inline {
-  /* Появление анимированного фона после первой отрисовки canvas. */
-  --animate-world-in: world-in 1.2s ease-out both;
   --animate-float: float 9s ease-in-out infinite;
 }
 
-@keyframes world-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
 
 @keyframes float {
   0%,

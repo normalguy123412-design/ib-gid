@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import * as React from "react"
 import {
@@ -113,7 +113,7 @@ export function HowItWorks() {
   const activeIndex = STEPS.findIndex((s) => s.id === active)
 
   return (
-    <Section id="how">
+    <Section id="how" label="Как это работает">
       <SectionHeader
         eyebrow="05 — Как это работает"
         title="Что происходит между вами и сервером"

@@ -1,4 +1,4 @@
-import { ArrowRightIcon, CheckIcon, XIcon } from "lucide-react"
+﻿import { ArrowRightIcon, CheckIcon, XIcon } from "lucide-react"
 import { Section, SectionHeader } from "@/components/section"
 import { commonMistakes } from "@/lib/content"
 
@@ -12,7 +12,7 @@ import { commonMistakes } from "@/lib/content"
  */
 export function CommonMistakes() {
   return (
-    <Section id="mistakes">
+    <Section id="mistakes" label="Частые ошибки">
       <SectionHeader
         eyebrow="06 — Памятка"
         title="Частые ошибки"

@@ -1,4 +1,4 @@
-import { Section, SectionHeader } from "@/components/section"
+﻿import { Section, SectionHeader } from "@/components/section"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -25,7 +25,7 @@ const severityStyles: Record<Severity, string> = {
  */
 export function FeaturesBento() {
   return (
-    <Section id="threats">
+    <Section id="threats" label="Угрозы">
       <SectionHeader
         eyebrow="03 — Угрозы"
         title="От чего стоит беречься"

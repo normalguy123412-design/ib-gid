@@ -1,4 +1,4 @@
-import Link from "next/link"
+﻿import Link from "next/link"
 import { ArrowUpRightIcon, CheckIcon } from "lucide-react"
 import { Section, SectionHeader } from "@/components/section"
 import { Badge } from "@/components/ui/badge"
@@ -23,7 +23,7 @@ import { defenseCategories, defenseMechanisms, frameworks } from "@/lib/content"
  */
 export function DefenseMethods() {
   return (
-    <Section id="defense">
+    <Section id="defense" label="Защита">
       <SectionHeader
         eyebrow="04 — Защита"
         title="Как защитить себя"

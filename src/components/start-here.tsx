@@ -1,4 +1,4 @@
-import { CompassIcon } from "lucide-react"
+﻿import { CompassIcon } from "lucide-react"
 import { Section, SectionHeader } from "@/components/section"
 import { Parallax } from "@/components/parallax"
 import {
@@ -19,7 +19,7 @@ import { startSteps } from "@/lib/content"
  */
 export function StartHere() {
   return (
-    <Section id="start">
+    <Section id="start" label="С чего начать">
       <SectionHeader
         eyebrow="00 — С чего начать"
         title="Если вы совсем новичок"

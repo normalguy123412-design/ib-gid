@@ -1,4 +1,4 @@
-import Link from "next/link"
+﻿import Link from "next/link"
 import { BookOpenIcon, ExternalLinkIcon, TargetIcon, UserIcon } from "lucide-react"
 import { Section } from "@/components/section"
 import { Parallax } from "@/components/parallax"
@@ -47,7 +47,7 @@ const SOURCES = [
 
 export function ProjectGoal() {
   return (
-    <Section id="about">
+    <Section id="about" label="О проекте">
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-12">
         {/* Цель и задачи. */}
         <div className="flex flex-col gap-6">

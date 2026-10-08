@@ -1,4 +1,4 @@
-import { Section, SectionHeader } from "@/components/section"
+﻿import { Section, SectionHeader } from "@/components/section"
 import { Parallax } from "@/components/parallax"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -32,7 +32,7 @@ const GROUPS = {
  */
 export function Glossary() {
   return (
-    <Section id="glossary">
+    <Section id="glossary" label="Словарик">
       <SectionHeader
         eyebrow="05 — Словарик"
         title="Что значат все эти сокращения"

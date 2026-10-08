@@ -42,7 +42,7 @@ const STEPS = [
 
 export function Checklist() {
   return (
-    <Section id="checklist" className="border-b">
+    <Section id="checklist" label="Три действия">
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-16">
         {/* Основной призыв. */}
         <Parallax speed={0.14} className="flex flex-col items-start gap-5">

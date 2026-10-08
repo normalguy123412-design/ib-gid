@@ -13,7 +13,6 @@ import { NumbersStrip } from "@/components/numbers-strip"
 import { ProjectGoal } from "@/components/project-goal"
 import { ScrollRail } from "@/components/scroll-rail"
 import { SecurityDemos } from "@/components/security-demos"
-import { SecurityWorld } from "@/components/security-world"
 import { SiteFooter } from "@/components/site-footer"
 import { StartHere } from "@/components/start-here"
 
@@ -30,15 +29,14 @@ import { StartHere } from "@/components/start-here"
 export default function Home() {
   return (
     <>
-      {/* Анимированный фон на весь экран передаётся в ленту как background. */}
+      {/* Фон — сплошной чёрный. На нём каждая панель несёт свою крупную
+          полупрозрачную подпись (см. label в Section), которая проезжает
+          вместе с лентой. Отдельного слоя с анимацией не требуется. */}
 
-      {/* Лента разделов: прокрутка вниз двигает её вправо. Фон и нижняя
-          полоса прогресса передаются внутрь — иначе они не видят прогресс
-          прокрутки и считают активный раздел по вертикали. */}
-      <HorizontalScroll
-        background={<SecurityWorld />}
-        overlay={<ScrollRail />}
-      >
+      {/* Лента разделов: прокрутка вниз двигает её вправо. Нижняя полоса
+          прогресса передаётся внутрь — иначе она не видит прогресс
+          прокрутки и считает активный раздел по вертикали. */}
+      <HorizontalScroll overlay={<ScrollRail />}>
         {/* main остаётся landmark'ом и растягивается вдоль всей ленты,
             чтобы разделы были его прямыми флекс-потомками. */}
         <main className="relative z-10 flex h-full w-max">

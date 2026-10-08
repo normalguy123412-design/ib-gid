@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import {
   Accordion,
@@ -21,7 +21,7 @@ import { faqCategories } from "@/lib/content"
  */
 export function FaqWithCategories() {
   return (
-    <Section id="faq">
+    <Section id="faq" label="Вопросы">
       <SectionHeader
         eyebrow="08 — FAQ"
         title="Частые вопросы"
