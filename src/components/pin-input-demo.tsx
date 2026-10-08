@@ -7,23 +7,35 @@ import {
   CornerDownLeftIcon,
   DeleteIcon,
   RefreshCwIcon,
-  ShieldCheckIcon,
   SmartphoneIcon,
+  TerminalIcon,
 } from "lucide-react"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useHydrated } from "@/hooks/use-hydrated"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "cn"
 
 const LENGTH = 6
+
+/**
+ * Что делает сервер с введённым кодом.
+ *
+ * Раньше это был отдельный блок под карточкой, и раздел 07 не влезал в
+ * один экран. Код относится именно к проверке TOTP, поэтому переехал
+ * внутрь же карточки — и заодно стал короче.
+ */
+const snippet = `// Сервер проверяет код
+const ok = await totp.verify({
+  token: code,           // 6 цифр из телефона
+  secret: user.totpSecret,
+  window: 1,             // допуск ±30 секунд
+})
+
+if (!ok) {
+  await rateLimit("2fa:" + user.id)   // защита от перебора
+  throw new UnauthorizedError()
+}` as const
 
 function randomCode() {
   return Array.from({ length: LENGTH }, () =>
@@ -147,38 +159,31 @@ export function PinInputDemo() {
   return (
     <Card className="flex flex-col gap-0">
       <CardHeader>
-        <div className="flex items-start justify-between gap-3">
-          <span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
-            <SmartphoneIcon className="size-5" />
+        <div className="flex items-center justify-between gap-3">
+          <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+            <SmartphoneIcon className="size-4" />
           </span>
-          <Badge variant="outline" className="shrink-0 font-mono">
+          <Badge variant="outline" className="shrink-0 font-mono text-[0.7rem]">
             TOTP · RFC 6238
           </Badge>
         </div>
-        <CardTitle className="mt-3">Двухфакторная аутентификация</CardTitle>
-        <CardDescription>
-          Второй фактор — то, что злоумышленник не сможет узнать из утечки базы
-          паролей.
-        </CardDescription>
+        <CardTitle className="mt-2 text-base">
+          Двухфакторная аутентификация
+        </CardTitle>
+        <p className="text-xs text-muted-foreground">
+          Второй фактор — то, что не утечёт вместе с базой паролей. Код
+          обновляется каждые 30 секунд, вставка из буфера и стрелки работают.
+        </p>
       </CardHeader>
 
-      <CardContent className="flex flex-col gap-5">
-        <Alert>
-          <ShieldCheckIcon />
-          <AlertTitle>Код из приложения-аутентификатора</AlertTitle>
-          <AlertDescription>
-            Демо-код обновляется каждые 30 секунд, как и настоящий TOTP. Введите
-            его ниже — стрелки, пробел и вставка из буфера работают как надо.
-          </AlertDescription>
-        </Alert>
-
-        <div className="flex flex-col items-center gap-3 rounded-xl border bg-muted/40 p-5">
-          <span className="text-xs uppercase text-muted-foreground">
+      <CardContent className="flex flex-col gap-3">
+        <div className="flex flex-col items-center gap-1 rounded-xl border bg-muted/40 p-3">
+          <span className="text-[0.7rem] uppercase text-muted-foreground">
             Ожидаемый код
           </span>
           <code
             className={cn(
-              "font-mono text-3xl font-semibold tracking-[0.4em]",
+              "font-mono text-2xl font-semibold tracking-[0.4em]",
               secret ? "" : "opacity-40",
               status === "success" && "text-emerald-500",
               status === "error" && "text-destructive"
@@ -210,10 +215,10 @@ export function PinInputDemo() {
             e.preventDefault()
             verify()
           }}
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-2"
         >
-          <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 text-sm font-medium">
+          <fieldset className="flex flex-col gap-1.5">
+            <legend className="text-xs font-medium">
               Введите 6-значный код
             </legend>
             <div className="flex justify-center gap-2">
@@ -234,10 +239,9 @@ export function PinInputDemo() {
                   onPaste={onPaste}
                   onFocus={(e) => e.currentTarget.select()}
                   className={cn(
-                    "size-11 rounded-lg border border-input bg-transparent text-center font-mono text-lg font-semibold transition-all outline-none",
+                    "size-10 rounded-lg border border-input bg-transparent text-center font-mono text-lg font-semibold transition-all outline-none",
                     "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
-                    digit &&
-                      "border-primary bg-primary/5 text-foreground",
+                    digit && "border-primary bg-primary/5 text-foreground",
                     status === "success" && "border-emerald-500",
                     status === "error" && "border-destructive"
                   )}
@@ -247,12 +251,13 @@ export function PinInputDemo() {
           </fieldset>
 
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <Button type="submit" disabled={filled !== LENGTH}>
+            <Button type="submit" size="sm" disabled={filled !== LENGTH}>
               <CornerDownLeftIcon data-icon="inline-start" />
               Подтвердить
             </Button>
             <Button
               type="button"
+              size="sm"
               variant="outline"
               onClick={reset}
               disabled={filled === 0}
@@ -260,20 +265,21 @@ export function PinInputDemo() {
               <DeleteIcon data-icon="inline-start" />
               Очистить
             </Button>
-<Button
-                type="button"
-                variant="ghost"
-                disabled={!secret}
-                onClick={async () => {
-                  if (!secret) return
-                  try {
-                    await navigator.clipboard.writeText(secret)
-                    toast.success("Код скопирован")
-                  } catch {
-                    toast.error("Буфер обмена недоступен")
-                  }
-                }}
-              >
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={!secret}
+              onClick={async () => {
+                if (!secret) return
+                try {
+                  await navigator.clipboard.writeText(secret)
+                  toast.success("Код скопирован")
+                } catch {
+                  toast.error("Буфер обмена недоступен")
+                }
+              }}
+            >
               <CopyIcon data-icon="inline-start" />
               Скопировать
             </Button>
@@ -291,11 +297,19 @@ export function PinInputDemo() {
           </p>
         </form>
 
-        <p className="text-xs text-pretty text-muted-foreground">
-          В боевой системе код проверяет сервер, проверяет счётчик окна и
-          ограничивает число попыток: перебор шестизначного кода становится
-          бессмысленным.
-        </p>
+        <div className="flex flex-col gap-1 rounded-lg border bg-muted/30 p-2">
+          <span className="flex items-center gap-1.5 text-xs font-medium">
+            <TerminalIcon className="size-3.5 text-primary" />
+            Что делает сервер
+          </span>
+          <pre className="overflow-x-auto rounded-md bg-muted/60 p-2 font-mono text-[0.65rem] leading-relaxed">
+            <code>{snippet}</code>
+          </pre>
+          <p className="text-xs text-pretty text-muted-foreground">
+            Секрет хранится только на сервере: утечка базы паролей не даёт
+            войти. Перебор шестизначного кода упирается в счётчик попыток.
+          </p>
+        </div>
       </CardContent>
     </Card>
   )

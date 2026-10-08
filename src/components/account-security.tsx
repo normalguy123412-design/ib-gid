@@ -4,8 +4,6 @@ import * as React from "react"
 import { toast } from "sonner"
 import {
   AtSignIcon,
-  CheckCircle2Icon,
-  CircleIcon,
   EyeIcon,
   EyeOffIcon,
   FingerprintIcon,
@@ -15,18 +13,10 @@ import {
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Progress } from "@/components/ui/progress"
-import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
@@ -101,9 +91,9 @@ export function AccountSecurity() {
   return (
     <Card className="flex flex-col gap-0">
       <CardHeader>
-        <div className="flex items-start justify-between gap-3">
-          <span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
-            <ShieldCheckIcon className="size-5" />
+        <div className="flex items-center justify-between gap-3">
+          <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+            <ShieldCheckIcon className="size-4" />
           </span>
           <Badge
             variant={level === "weak" ? "destructive" : "secondary"}
@@ -116,45 +106,27 @@ export function AccountSecurity() {
                 : "Уязвимо"}
           </Badge>
         </div>
-        <CardTitle className="mt-3">Настройка безопасности аккаунта</CardTitle>
-        <CardDescription>
-          Четыре шага, которые закрывают большую часть сценариев атаки на
-          учётную запись.
-        </CardDescription>
+        <CardTitle className="mt-2 text-base">
+          Настройка безопасности аккаунта
+        </CardTitle>
+
+        {/*
+          Четыре шага перечислены не отдельным списком, а самими полями и
+          переключателями ниже — так они занимают одну строку вместо пяти и
+          остаются на одном экране вместе с остальными демо.
+        */}
+        <div className="flex items-baseline justify-between gap-2 text-xs text-muted-foreground">
+          <span>Готовность аккаунта</span>
+          <span className="font-mono">
+            {doneCount}/{steps.length} · {percent}%
+          </span>
+        </div>
+        <Progress value={percent} />
       </CardHeader>
 
-      <CardContent className="flex flex-col gap-6">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-baseline justify-between">
-            <span className="text-sm font-medium">Готовность аккаунта</span>
-            <span className="font-mono text-sm text-muted-foreground">
-              {doneCount}/{steps.length} · {percent}%
-            </span>
-          </div>
-          <Progress value={percent} />
-          <ul className="mt-1 flex flex-col gap-1.5">
-            {steps.map((step) => (
-              <li
-                key={step.label}
-                className="flex items-center gap-2 text-xs text-muted-foreground"
-              >
-                {step.done ? (
-                  <CheckCircle2Icon className="size-3.5 shrink-0 text-emerald-500" />
-                ) : (
-                  <CircleIcon className="size-3.5 shrink-0 opacity-50" />
-                )}
-                <span className={step.done ? "text-foreground" : undefined}>
-                  {step.label}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <Separator />
-
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="acc-email">
+      <CardContent className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="acc-email" className="text-xs">
             <AtSignIcon className="size-3.5 text-muted-foreground" />
             Email для восстановления
           </Label>
@@ -174,6 +146,7 @@ export function AccountSecurity() {
             />
             <Button
               type="button"
+              size="sm"
               variant={emailState === "valid" ? "secondary" : "outline"}
               onClick={confirmEmail}
               disabled={emailState === "valid"}
@@ -188,8 +161,8 @@ export function AccountSecurity() {
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="acc-password">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="acc-password" className="text-xs">
             <KeyRoundIcon className="size-3.5 text-muted-foreground" />
             Пароль
           </Label>
@@ -220,73 +193,52 @@ export function AccountSecurity() {
               </Button>
             </div>
           </div>
-          {password ? (
-            <div className="flex flex-col gap-1.5">
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${strength.tone}`}
-                  style={{ width: `${score}%` }}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Оценка {score}/100 — {strength.text.toLowerCase()}. Надёжный
-                пароль длиннее, чем «сложный».
-              </p>
-            </div>
-          ) : null}
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${strength.tone}`}
+              style={{ width: `${password ? score : 0}%` }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {password
+              ? `Оценка ${score}/100 — ${strength.text.toLowerCase()}. Надёжный пароль длиннее, чем «сложный».`
+              : "Оценка появляется при вводе. Надёжный пароль длиннее, чем «сложный»."}
+          </p>
         </div>
 
-        <div className="flex items-center justify-between gap-4 rounded-lg border bg-muted/40 p-3">
-          <div className="flex flex-col gap-0.5">
-            <Label htmlFor="acc-2fa" className="cursor-pointer">
-              <FingerprintIcon className="size-3.5 text-muted-foreground" />
-              Двухфакторная аутентификация
-            </Label>
-            <p className="text-xs text-muted-foreground">
-              Пароль + код из приложения. Защищает даже при утечке пароля.
-            </p>
-          </div>
+        <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/40 p-2.5">
+          <Label htmlFor="acc-2fa" className="cursor-pointer text-xs">
+            <FingerprintIcon className="size-3.5 text-muted-foreground" />
+            Двухфакторная аутентификация — пароль плюс код из приложения
+          </Label>
           <Switch
             id="acc-2fa"
+            className="shrink-0"
             checked={twoFactor}
             onCheckedChange={setTwoFactor}
           />
         </div>
 
-        <div className="flex items-center justify-between gap-4 rounded-lg border bg-muted/40 p-3">
-          <div className="flex flex-col gap-0.5">
-            <Label htmlFor="acc-id" className="cursor-pointer">
-              <IdCardIcon className="size-3.5 text-muted-foreground" />
-              Верификация личности
-            </Label>
-            <p className="text-xs text-muted-foreground">
-              Возвращает доступ, если все каналы восстановления утеряны.
-            </p>
-          </div>
+        <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/40 p-2.5">
+          <Label htmlFor="acc-id" className="cursor-pointer text-xs">
+            <IdCardIcon className="size-3.5 text-muted-foreground" />
+            Верификация личности — вернёт доступ при утере каналов восстановления
+          </Label>
           <Switch
             id="acc-id"
+            className="shrink-0"
             checked={verified}
             onCheckedChange={(checked) => {
               setVerified(checked)
-              toast(
-                checked ? "success" : "info",
-                {
-                  description: checked
-                    ? "Код восстановления сохранён офлайн."
-                    : "Верификация отключена.",
-                }
-              )
+              toast(checked ? "success" : "info", {
+                description: checked
+                  ? "Код восстановления сохранён офлайн."
+                  : "Верификация отключена.",
+              })
             }}
           />
         </div>
       </CardContent>
-
-      <CardFooter>
-        <p className="text-xs text-pretty text-muted-foreground">
-          Ничего из этого не отправляется на сервер — демонстрация работает
-          полностью в браузере.
-        </p>
-      </CardFooter>
     </Card>
   )
 }
