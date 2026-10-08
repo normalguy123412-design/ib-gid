@@ -8,7 +8,6 @@ import {
   DeleteIcon,
   RefreshCwIcon,
   SmartphoneIcon,
-  TerminalIcon,
 } from "lucide-react"
 import { useHydrated } from "@/hooks/use-hydrated"
 import { Badge } from "@/components/ui/badge"
@@ -17,25 +16,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "cn"
 
 const LENGTH = 6
-
-/**
- * Что делает сервер с введённым кодом.
- *
- * Раньше это был отдельный блок под карточкой, и раздел 07 не влезал в
- * один экран. Код относится именно к проверке TOTP, поэтому переехал
- * внутрь же карточки — и заодно стал короче.
- */
-const snippet = `// Сервер проверяет код
-const ok = await totp.verify({
-  token: code,           // 6 цифр из телефона
-  secret: user.totpSecret,
-  window: 1,             // допуск ±30 секунд
-})
-
-if (!ok) {
-  await rateLimit("2fa:" + user.id)   // защита от перебора
-  throw new UnauthorizedError()
-}` as const
 
 function randomCode() {
   return Array.from({ length: LENGTH }, () =>
@@ -296,20 +276,6 @@ export function PinInputDemo() {
                 : `Введено ${filled} из ${LENGTH}`}
           </p>
         </form>
-
-        <div className="flex flex-col gap-1 rounded-lg border bg-muted/30 p-2">
-          <span className="flex items-center gap-1.5 text-xs font-medium">
-            <TerminalIcon className="size-3.5 text-primary" />
-            Что делает сервер
-          </span>
-          <pre className="overflow-x-auto rounded-md bg-muted/60 p-2 font-mono text-[0.65rem] leading-relaxed">
-            <code>{snippet}</code>
-          </pre>
-          <p className="text-xs text-pretty text-muted-foreground">
-            Секрет хранится только на сервере: утечка базы паролей не даёт
-            войти. Перебор шестизначного кода упирается в счётчик попыток.
-          </p>
-        </div>
       </CardContent>
     </Card>
   )
