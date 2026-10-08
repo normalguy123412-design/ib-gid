@@ -1,5 +1,5 @@
 ﻿import { CheckIcon } from "lucide-react"
-import { Section, SectionHeader } from "@/components/section"
+import { Section } from "@/components/section"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -14,62 +14,73 @@ import { defenseCategories, defenseMechanisms } from "@/lib/content"
 /**
  * СЕКЦИЯ «ЗАЩИТА» (#defense).
  *
- * Состоит из трёх блоков:
+ * Два блока в один экран:
  * 1) четыре категории методов защиты (физические, криптографические,
  *    программные, организационные);
- * 2) ключевые механизмы — шифрование, аутентификация, мониторинг, firewall;
- * 3) фреймворки и базы знаний (NIST, OWASP, MITRE ATT&CK, CISA).
+ * 2) ключевые механизмы — шифрование, вход по нескольким признакам,
+ *    слежение, файрвол.
  *
- * Раньше блоки шли друг под другом, и раздел не помещался в экран —
- * его приходилось дочитывать прокруткой вниз. Теперь каждый блок
- * занимает свой экран по ширине: заголовок, потом категории, потом
- * механизмы, потом фреймворки. Листается только вправо.
+ * Раньше блоки шли один за другим на отдельных экранах, и заголовок
+ * «Как защитить себя» оказывался далеко слева — приходилось листать
+ * назад, чтобы вспомнить, о чём вообще этот раздел. Теперь всё
+ * помещается на одном экране, и заголовок всегда перед глазами.
  */
 export function DefenseMethods() {
   return (
-    <Section id="defense" label="Защита" screens={3}>
-      <div className="flex h-full w-full gap-10">
-        <div className="flex h-full w-[calc(100vw-4rem)] shrink-0 flex-col justify-center">
-          <SectionHeader
-            eyebrow="04 — Защита"
-            title="Как защитить себя"
-            description="Защита бывает четырёх видов: от воровства вещей, от подглядывания в данные, от вирусов и от человеческой ошибки. Работает только то, что есть все четыре сразу."
-          />
-        </div>
+    <Section id="defense" label="Защита" screens={1}>
+      <div className="flex h-full flex-col justify-center gap-5">
+        <header className="flex flex-col gap-1">
+          <Badge
+            variant="outline"
+            className="w-fit font-mono text-[0.7rem] uppercase"
+          >
+            05 — Защита
+          </Badge>
+          <h2 className="font-heading text-xl font-semibold tracking-tight sm:text-2xl">
+            Как защитить себя
+          </h2>
+          <p className="max-w-3xl text-sm text-pretty text-muted-foreground">
+            Защита бывает четырёх видов: от воровства вещей, от
+            подглядывания в данные, от вирусов и от человеческой ошибки.
+            Работает только то, что есть все четыре сразу.
+          </p>
+        </header>
 
-        {/* Категории методов защиты. */}
-        <div className="flex h-full w-[calc(100vw-4rem)] shrink-0 flex-col justify-center gap-5">
-          <h3 className="font-heading text-2xl font-semibold tracking-tight">
+        {/* Четыре вида защиты. */}
+        <div className="flex flex-col gap-2.5">
+          <h3 className="font-heading text-sm font-semibold tracking-tight text-muted-foreground uppercase">
             Четыре вида защиты
           </h3>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {defenseCategories.map((category, index) => (
               <Card
                 key={category.title}
-                className="group flex transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+                className="flex flex-col gap-2 border-border/70 bg-card/50 py-3 transition-colors hover:border-primary/40"
               >
-                <CardHeader>
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                      <category.icon className="size-5" />
+                <CardHeader className="px-3">
+                  <div className="flex items-center justify-between">
+                    <span className="grid size-9 place-items-center rounded-lg bg-primary/10 text-primary">
+                      <category.icon className="size-4" />
                     </span>
-                    <span className="font-mono text-xs text-muted-foreground">
+                    <span className="font-mono text-[0.7rem] text-muted-foreground">
                       0{index + 1}
                     </span>
                   </div>
-                  <CardTitle>{category.title}</CardTitle>
-                  <CardDescription className="text-pretty">
+                  <CardTitle className="mt-1.5 text-sm leading-tight">
+                    {category.title}
+                  </CardTitle>
+                  <CardDescription className="text-xs text-pretty leading-snug text-muted-foreground">
                     {category.description}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <ul className="flex flex-col gap-2">
+                <CardContent className="px-3">
+                  <ul className="flex flex-col gap-1">
                     {category.examples.map((example) => (
                       <li
                         key={example}
-                        className="flex items-start gap-2 text-xs text-muted-foreground"
+                        className="flex items-start gap-1.5 text-[0.7rem] text-muted-foreground"
                       >
-                        <CheckIcon className="mt-0.5 size-3.5 shrink-0 text-primary" />
+                        <CheckIcon className="mt-0.5 size-3 shrink-0 text-primary" />
                         {example}
                       </li>
                     ))}
@@ -80,27 +91,36 @@ export function DefenseMethods() {
           </div>
         </div>
 
-        {/* Ключевые механизмы защиты. */}
-        <div className="flex h-full w-[calc(100vw-3rem)] shrink-0 flex-col justify-center gap-5">
-          <h3 className="font-heading text-2xl font-semibold tracking-tight">
-            Ключевые механизмы защиты
+        {/* Ключевые механизмы. */}
+        <div className="flex flex-col gap-2.5">
+          <h3 className="font-heading text-sm font-semibold tracking-tight text-muted-foreground uppercase">
+            Ключевые механизмы
           </h3>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {defenseMechanisms.map((mechanism) => (
-              <Card key={mechanism.title}>
-                <CardHeader>
-                  <span className="mb-1 grid size-11 place-items-center rounded-xl bg-muted text-foreground">
-                    <mechanism.icon className="size-5" />
+              <Card
+                key={mechanism.title}
+                className="flex flex-col border-border/70 bg-card/50 py-3"
+              >
+                <CardHeader className="px-3">
+                  <span className="grid size-9 place-items-center rounded-lg bg-muted text-foreground">
+                    <mechanism.icon className="size-4" />
                   </span>
-                  <CardTitle>{mechanism.title}</CardTitle>
-                  <CardDescription className="text-pretty">
+                  <CardTitle className="mt-1.5 text-sm leading-tight">
+                    {mechanism.title}
+                  </CardTitle>
+                  <CardDescription className="text-xs text-pretty leading-snug text-muted-foreground">
                     {mechanism.description}
                   </CardDescription>
                 </CardHeader>
-                <CardFooter className="border-t-0 bg-transparent pt-0">
-                  <div className="flex flex-wrap gap-1.5">
+                <CardFooter className="mt-auto border-t-0 bg-transparent px-3 pt-0">
+                  <div className="flex flex-wrap gap-1">
                     {mechanism.stack.map((tech) => (
-                      <Badge key={tech} variant="secondary" className="font-mono">
+                      <Badge
+                        key={tech}
+                        variant="secondary"
+                        className="font-mono text-[0.65rem]"
+                      >
                         {tech}
                       </Badge>
                     ))}

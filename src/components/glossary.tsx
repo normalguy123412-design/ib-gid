@@ -43,7 +43,7 @@ export function Glossary() {
               variant="outline"
               className="w-fit font-mono text-[0.7rem] uppercase"
             >
-              05 — Словарик
+              03 — Словарик
             </Badge>
             <h2 className="font-heading text-xl font-semibold tracking-tight sm:text-2xl">
               Что значат все эти сокращения

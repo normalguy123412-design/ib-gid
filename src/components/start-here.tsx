@@ -21,7 +21,7 @@ export function StartHere() {
   return (
     <Section id="start" label="С чего начать">
       <SectionHeader
-        eyebrow="00 — С чего начать"
+        eyebrow="01 — С чего начать"
         title="Если вы совсем новичок"
         description="Ниже — три шага, которые объясняют весь сайт. Можно пройти только их и уже стать заметно защищённее."
       />

@@ -36,7 +36,7 @@ export function FeaturesBento() {
             variant="outline"
             className="w-fit font-mono text-[0.7rem] uppercase"
           >
-            03 — Угрозы
+            04 — Угрозы
           </Badge>
           <h2 className="font-heading text-xl font-semibold tracking-tight sm:text-2xl">
             От чего стоит беречься

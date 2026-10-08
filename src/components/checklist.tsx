@@ -47,7 +47,7 @@ export function Checklist() {
         {/* Основной призыв. */}
         <Parallax speed={0.14} className="flex flex-col items-start gap-5">
           <Badge variant="outline" className="font-mono text-[0.7rem] uppercase">
-            06 — Чек-лист
+            09 — Чек-лист
           </Badge>
 
           <h2 className="font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
