@@ -1,69 +1,49 @@
-import Image from "next/image";
+import { AuroraHero } from "@/components/aurora-hero"
+import { CoreFeatures } from "@/components/core-features"
+import { DefenseMethods } from "@/components/defense-methods"
+import { FaqWithCategories } from "@/components/faq-with-categories"
+import { FeaturesBento } from "@/components/features-bento"
+import { ScrollRail } from "@/components/scroll-rail"
+import { SecurityDemos } from "@/components/security-demos"
+import { SecurityWorld } from "@/components/security-world"
+import { SiteFooter } from "@/components/site-footer"
 
+/**
+ * Одностраничный сайт «ИБ-Гид».
+ *
+ * Порядок секций повторяет учебный путь читателя:
+ * понятия → угрозы → защита → интерактивные демо → FAQ.
+ * Верхней навигационной панели нет: разделы переключаются точками в нижней
+ * полосе прогресса (см. ScrollRail), а `id` секций должны совпадать
+ * с `href` в `navItems` (см. src/lib/content.ts).
+ */
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <>
+      {/* Анимированный фон на весь экран: z-0, весь контент лежит выше. */}
+      <SecurityWorld />
+
+      {/* relative + z-10 — контент поверх фонового canvas. */}
+      <main className="relative z-10 flex-1">
+        {/* 0. Первый экран (hero) с CTA «Начать изучение» → #concepts */}
+        <AuroraHero />
+        {/* 1. #concepts — определение ИБ и триада CIA */}
+        <CoreFeatures />
+        {/* 2. #threats — бенто-сетка типов угроз и их классификация */}
+        <FeaturesBento />
+        {/* 3. #defense — методы защиты и фреймворки */}
+        <DefenseMethods />
+        {/* 4. #demos — 2FA и настройка безопасности аккаунта */}
+        <SecurityDemos />
+        {/* 5. #faq — аккордеон с часто задаваемыми вопросами */}
+        <FaqWithCategories />
       </main>
-    </div>
-  );
+
+      {/* Подвал: разделы, ресурсы и копирайт. */}
+      <SiteFooter />
+
+      {/* Нижняя полоса прогресса с точками разделов и переключателем темы. */}
+      <ScrollRail />
+    </>
+  )
 }

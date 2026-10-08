@@ -1,0 +1,62 @@
+# Сборка статического сайта и публикация на GitHub Pages.
+#
+# Сайт собирается через `next build` в режиме output: "export" (папка out/),
+# поэтому на Pages не нужен Node.js — только готовые HTML/CSS/JS.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  # Позволяет перезапустить деплой из вкладки Actions без нового коммита.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Одновременные деплои отменяют друг друга, чтобы не гонять сборки впустую.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Установить зависимости
+        run: npm ci
+
+      - name: Собрать статический сайт
+        run: npm run build
+        env:
+          # Сайт публикуется в подкаталоге /<имя-репозитория>/, поэтому все
+          # ссылки на ассеты должны начинаться с этого префикса.
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+
+      - name: Подготовить Pages
+        uses: actions/configure-pages@v5
+
+      - name: Загрузить артефакт
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Опубликовать
+        id: deployment
+        uses: actions/deploy-pages@v4
