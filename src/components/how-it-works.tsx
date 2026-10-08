@@ -74,39 +74,40 @@ export function HowItWorks() {
   const refs = React.useRef<(HTMLLIElement | null)[]>([])
 
   React.useEffect(() => {
-    let frame = 0
+    const nodes = refs.current.filter((el): el is HTMLLIElement =>
+      Boolean(el)
+    )
+    if (!nodes.length) return
 
-    const update = () => {
-      const center = window.innerHeight / 2
-      let best = 0
-      let bestDist = Infinity
+    // IntersectionObserver вместо обработчика window.scroll.
+    // В горизонтальном режиме панель прокручивается внутри себя, и окно
+    // об этом не знает; наблюдатель же ловит момент, когда положение
+    // карточек относительно экрана изменилось, — то есть работает и там.
+    const observer = new IntersectionObserver(
+      () => {
+        const center = window.innerHeight / 2
+        let best: StepId = "check"
+        let bestDist = Infinity
 
-      refs.current.forEach((el, i) => {
-        if (!el) return
-        const rect = el.getBoundingClientRect()
-        const dist = Math.abs(rect.top + rect.height / 2 - center)
-        if (dist < bestDist) {
-          bestDist = dist
-          best = i
+        for (const el of nodes) {
+          const rect = el.getBoundingClientRect()
+          const dist = Math.abs(rect.top + rect.height / 2 - center)
+          if (dist < bestDist) {
+            bestDist = dist
+            best = el.dataset.step as StepId
+          }
         }
-      })
 
-      setActive(STEPS[best].id)
-    }
+        setActive(best)
+      },
+      {
+        threshold: [0, 0.2, 0.4, 0.6, 0.8, 1],
+        rootMargin: "-15% 0px -15% 0px",
+      }
+    )
 
-    const onScroll = () => {
-      cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(update)
-    }
-
-    update()
-    window.addEventListener("scroll", onScroll, { passive: true })
-    window.addEventListener("resize", onScroll)
-    return () => {
-      cancelAnimationFrame(frame)
-      window.removeEventListener("scroll", onScroll)
-      window.removeEventListener("resize", onScroll)
-    }
+    nodes.forEach((node) => observer.observe(node))
+    return () => observer.disconnect()
   }, [])
 
   const activeIndex = STEPS.findIndex((s) => s.id === active)
@@ -133,6 +134,7 @@ export function HowItWorks() {
             return (
               <li
                 key={step.id}
+                data-step={step.id}
                 ref={(el) => {
                   refs.current[i] = el
                 }}

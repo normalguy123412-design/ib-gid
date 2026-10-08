@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react"
+import { useHorizontalScroll } from "@/components/horizontal-scroll"
 
 /**
  * ПАРАЛЛАКС ПРИ ПРОКРУТКЕ.
@@ -17,6 +18,11 @@ import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "mo
  *
  * Уважает prefers-reduced-motion и не анимирует, пока элемент вне экрана:
  * useScroll считает прогресс только пока цель видна.
+ *
+ * В горизонтальном режиме эффект отключён. Лента едет трансформом по X
+ * при неподвижной прокрутке по горизонтали, поэтому вертикальный
+ * scrollYProgress у панелей всегда ноль и параллакс просто не работает.
+ * Глубину там создаёт появление блоков (см. Reveal).
  */
 export function Parallax({
   children,
@@ -30,6 +36,7 @@ export function Parallax({
 }) {
   const ref = React.useRef<HTMLDivElement | null>(null)
   const reduceMotion = useReducedMotion()
+  const horizontal = useHorizontalScroll()
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -46,7 +53,7 @@ export function Parallax({
   // Диапазон смещения: speed * 120px в обе стороны от нейтрали.
   const y = useTransform(smooth, [0, 1], [speed * 120, speed * -120])
 
-  if (reduceMotion || speed === 0) {
+  if (horizontal || reduceMotion || speed === 0) {
     return <div className={className}>{children}</div>
   }
 

@@ -21,7 +21,7 @@ export function AuroraHero() {
   return (
     <section
       id="top"
-      className="relative isolate overflow-hidden border-b pt-20 pb-16 sm:pt-28 sm:pb-24"
+      className="relative isolate h-full w-screen shrink-0 overflow-y-auto border-r pt-14 pb-20 sm:pt-16 sm:pb-24"
     >
       {/* Затемнение для читаемости текста. */}
       <div
@@ -29,7 +29,7 @@ export function AuroraHero() {
         className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-background/80 via-background/25 to-transparent"
       />
 
-      <div className="mx-auto flex w-full max-w-4xl flex-col items-center px-4 text-center sm:px-6">
+      <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col items-center justify-center px-4 text-center sm:px-6">
         {/* Каскад появления: каждый следующий блок стартует с задержкой. */}
         <Enter index={0}>
               <Badge variant="secondary" className="anim-bob gap-1.5">

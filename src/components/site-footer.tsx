@@ -15,8 +15,9 @@ export async function SiteFooter() {
   const year = getCurrentYear()
 
   return (
-    <footer className="relative z-10 border-t bg-background/70 pb-28 backdrop-blur-sm">
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+    <footer className="relative z-10 h-full w-screen shrink-0 overflow-y-auto border-r bg-background/70 pb-28 backdrop-blur-sm">
+      <div className="flex min-h-full w-full flex-col px-4 sm:px-6">
+        <div className="mx-auto my-auto w-full max-w-6xl">
         <div className="flex flex-col gap-8 py-12 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
           {/* Логотип и разделы. */}
           <div className="flex shrink-0 flex-col gap-5">
@@ -113,13 +114,28 @@ export async function SiteFooter() {
 
         <Separator />
 
-        <div className="flex flex-col gap-2 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {year} {site.name}. Материалы носят справочный характер.
           </p>
           <p>
             Сделано без внешних изображений — только SVG и CSS-градиенты.
           </p>
+        </div>
+
+        <p className="pb-8 text-xs text-pretty leading-relaxed text-muted-foreground">
+          Оформление и приёмы прокрутки подсмотрены у проекта{" "}
+          <a
+            href="https://github.com/Wranked1/DDNet-AI"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 underline underline-offset-4 transition-colors hover:text-foreground"
+          >
+            DDNet AI
+            <ExternalLinkIcon className="size-3" />
+          </a>
+          . Код сайта написан с нуля и распространяется отдельно от него.
+        </p>
         </div>
       </div>
     </footer>

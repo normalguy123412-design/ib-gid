@@ -75,9 +75,7 @@
   --radius: 0.625rem;
   /* Мягкий свет над анимированным фоном (см. SecurityWorld). */
   --world-glow: oklch(0.62 0.14 235 / 0.1);
-  /* Фоновая сетка: сторона плитки, контраст заливки и затемнение краёв. */
-  --grid-tile: 56px;
-  --grid-ink: oklch(0 0 0 / 0.05);
+  /* Фоновая виньетка: затемняет края, чтобы текст в центре читался. */
   --grid-vignette: oklch(0 0 0 / 0.22);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
@@ -110,8 +108,7 @@
   --ring: oklch(0.556 0 0);
   /* Свет над фоном в тёмной теме — холоднее и заметнее. */
   --world-glow: oklch(0.72 0.15 230 / 0.13);
-  /* На тёмном фоне сетку видно в отражении, поэтому она бледнее. */
-  --grid-ink: oklch(1 0 0 / 0.035);
+  /* На тёмном фоне виньетка глубже, чтобы края уходили в черноту. */
   --grid-vignette: oklch(0 0 0 / 0.55);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
@@ -134,24 +131,12 @@
   }
 
   /*
-    Фон перенесён с body на html: фон html виден всегда, а фон body
-    схлопывается при прокрутке. Здесь же живёт ползущая сетка —
-    conic-gradient рисует затенённые углы плитки, а сдвиг
-    background-position ровно на четыре плитки за цикл не показывает шва,
-    поэтому анимация бесконечна.
+    Фон живёт на html, а не на body: фон body схлопывается при прокрутке,
+    а фон html виден всегда.
   */
   html {
     @apply font-sans scroll-smooth;
     background-color: var(--background);
-    background-image: conic-gradient(
-      from 90deg at 50% 50%,
-      var(--grid-ink) 25%,
-      transparent 0 50%,
-      var(--grid-ink) 0 75%,
-      transparent 0
-    );
-    background-size: var(--grid-tile) var(--grid-tile);
-    animation: grid-pan 13.333s linear infinite;
   }
 
   /* Фон body должен быть прозрачным, иначе он закроет сетку на html. */
@@ -200,21 +185,6 @@
   }
   50% {
     transform: translateY(-10px);
-  }
-}
-
-/*
-  Ползущая сетка. Сдвиг за цикл кратен плитке (4 и 2 плитки), поэтому
-  шов не виден и анимация бесконечна. Диагональ пологая: на 2 плитки
-  вправо приходится 4 влево — та же траектория, что и у DDNet.
-  Сторона плитки задаётся --grid-tile, здесь ей же посчитан сдвиг.
-*/
-@keyframes grid-pan {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: -224px 112px;
   }
 }
 

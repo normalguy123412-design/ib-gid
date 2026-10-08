@@ -7,8 +7,17 @@ import { cn } from "cn"
  * Обёртка секции: якорь для навигации (#concepts, #threats и т.д.),
  * вертикальный отступ и появление контента при прокрутке.
  *
- * Небольшой `scroll-mt-4` нужен, чтобы при переходе по якорю заголовок
- * не прилипал к самому краю окна: верхней фиксированной панели у сайта нет.
+ * В горизонтальном режиме секция — это панель шириной в экран: она не
+ * растёт по вертикали, а прокручивается внутри себя, если контента
+ * больше одного экрана. Внутренние поля и `overflow-y-auto` в связке с
+ * обычным поведением overscroll дают то, что нужно: колесо сначала
+ * дочитывает панель, а потом, на её краю, перехватывает страницу и
+ * двигает ленту дальше.
+ *
+ * Центрирование сделано на `my-auto`, а не на `justify-center`: при
+ * переполнении `justify-center` обрезает верх панели и до него
+ * нельзя доскроллить, а автоматические поля в таком случае просто
+ * превращаются в отступ.
  */
 export function Section({
   id,
@@ -22,10 +31,15 @@ export function Section({
   return (
     <section
       id={id}
-      className={cn("scroll-mt-4 border-b py-16 sm:py-24", className)}
+      className={cn(
+        "h-full w-screen shrink-0 overflow-y-auto border-r",
+        className
+      )}
     >
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-        <Reveal>{children}</Reveal>
+      <div className="flex min-h-full w-full flex-col px-4 py-10 sm:px-6">
+        <div className="mx-auto my-auto w-full max-w-6xl">
+          <Reveal>{children}</Reveal>
+        </div>
       </div>
     </section>
   )

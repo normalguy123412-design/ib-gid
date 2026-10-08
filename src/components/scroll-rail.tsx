@@ -4,6 +4,7 @@ import * as React from "react"
 import { MoonIcon, ShieldCheckIcon, SunIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 import { navItems } from "@/lib/content"
+import { useHorizontalScroll } from "@/components/horizontal-scroll"
 import { useHydrated } from "@/hooks/use-hydrated"
 
 /**
@@ -23,6 +24,9 @@ export function ScrollRail() {
   const [dragging, setDragging] = React.useState(false)
   const { resolvedTheme, setTheme } = useTheme()
   const hydrated = useHydrated()
+  // В горизонтальном режиме раздел «находится» по горизонтали, поэтому
+  // и переходы, и подсветка точки считаются иначе.
+  const horizontal = useHorizontalScroll()
 
   /** Обновление прогресса и активного раздела по позиции прокрутки. */
   React.useEffect(() => {
@@ -33,15 +37,28 @@ export function ScrollRail() {
       const y = window.scrollY
       setProgress(max > 0 ? Math.min(1, Math.max(0, y / max)) : 0)
 
-      // Активным считаем последний раздел, чей верх уже прошёл линию обзора.
-      const line = y + window.innerHeight * 0.35
       let current = navItems[0].href
-      for (const item of navItems) {
-        const el = document.querySelector(item.href)
-        if (!el) continue
-        const top = el.getBoundingClientRect().top + y
-        if (top <= line) current = item.href
+
+      if (horizontal) {
+        // Разделы стоят рядом по горизонтали, поэтому ориентируемся на
+        // левый край, а не на верх: активен последний, чей левый край
+        // уже прошёл линию обзора.
+        const line = window.innerWidth * 0.35
+        for (const item of navItems) {
+          const el = document.querySelector(item.href)
+          if (!el) continue
+          if (el.getBoundingClientRect().left <= line) current = item.href
+        }
+      } else {
+        const line = y + window.innerHeight * 0.35
+        for (const item of navItems) {
+          const el = document.querySelector(item.href)
+          if (!el) continue
+          const top = el.getBoundingClientRect().top + y
+          if (top <= line) current = item.href
+        }
       }
+
       setActive(current)
     }
 
@@ -58,7 +75,7 @@ export function ScrollRail() {
       window.removeEventListener("scroll", onScroll)
       window.removeEventListener("resize", onScroll)
     }
-  }, [])
+  }, [horizontal])
 
   /** Перемотка страницы по позиции указателя на рельсе. */
   const scrubTo = React.useCallback((clientX: number) => {
@@ -70,12 +87,28 @@ export function ScrollRail() {
     window.scrollTo({ top: ratio * max })
   }, [])
 
-  /** Плавный переход к разделу из точки навигации. */
-  const goTo = React.useCallback((href: string) => {
-    const el = document.querySelector(href)
-    if (!el) return
-    el.scrollIntoView({ behavior: "smooth", block: "start" })
-  }, [])
+  /** Плавный переход к разделу: в горизонтали — через прокрутку ленты. */
+  const goTo = React.useCallback(
+    (href: string) => {
+      if (horizontal) {
+        horizontal.scrollToSection(href.slice(1))
+        return
+      }
+      const el = document.querySelector(href)
+      if (!el) return
+      el.scrollIntoView({ behavior: "smooth", block: "start" })
+    },
+    [horizontal]
+  )
+
+  /** Возврат на самый первый экран. */
+  const goHome = React.useCallback(() => {
+    if (horizontal) {
+      horizontal.scrollToSection("top")
+      return
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }, [horizontal])
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40">
@@ -85,7 +118,7 @@ export function ScrollRail() {
           {/* Логотип: он же ссылка наверх, раз верхней панели больше нет. */}
           <button
             type="button"
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            onClick={goHome}
             className="flex shrink-0 items-center gap-2 rounded-lg px-1 py-1 font-heading text-sm font-semibold tracking-tight"
             aria-label="ИБ-Гид — наверх"
           >
