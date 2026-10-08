@@ -4,12 +4,12 @@ import { CommonMistakes } from "@/components/common-mistakes"
 import { CoreFeatures } from "@/components/core-features"
 import { DefenseMethods } from "@/components/defense-methods"
 import { FeaturesBento } from "@/components/features-bento"
+import { DockNav } from "@/components/dock-nav"
 import { Glossary } from "@/components/glossary"
 import { HorizontalScroll } from "@/components/horizontal-scroll"
 import { HowItWorks } from "@/components/how-it-works"
 import { IfItHappens } from "@/components/if-it-happens"
 import { NumbersStrip } from "@/components/numbers-strip"
-import { ScrollRail } from "@/components/scroll-rail"
 import { SecurityDemos } from "@/components/security-demos"
 import { SiteFooter } from "@/components/site-footer"
 import { StartHere } from "@/components/start-here"
@@ -20,8 +20,8 @@ import { StartHere } from "@/components/start-here"
  * Порядок секций повторяет учебный путь читателя:
  * старт → понятия → угрозы → защита → как это работает → демо →
  * словарик → цифры → чек-лист → FAQ.
- * Верхней навигационной панели нет: разделы переключаются точками в нижней
- * полосе прогресса (см. ScrollRail), а `id` секций должны совпадать
+ * Верхней навигационной панели нет: разделы переключаются кнопками дока
+ * внизу экрана (см. DockNav), а `id` секций должны совпадать
  * с `href` в `navItems` (см. src/lib/content.ts).
  */
 export default function Home() {
@@ -31,10 +31,10 @@ export default function Home() {
           полупрозрачную подпись (см. label в Section), которая проезжает
           вместе с лентой. Отдельного слоя с анимацией не требуется. */}
 
-      {/* Лента разделов: прокрутка вниз двигает её вправо. Нижняя полоса
-          прогресса передаётся внутрь — иначе она не видит прогресс
-          прокрутки и считает активный раздел по вертикали. */}
-      <HorizontalScroll overlay={<ScrollRail />}>
+      {/* Лента разделов: прокрутка вниз двигает её вправо. Док передаётся
+          внутрь — иначе он не видит прогресс прокрутки и считает активный
+          раздел по вертикали, где у всех панелей одинаковый верх. */}
+      <HorizontalScroll overlay={<DockNav />}>
         {/* main остаётся landmark'ом и растягивается вдоль всей ленты,
             чтобы разделы были его прямыми флекс-потомками. */}
         <main className="relative z-10 flex h-full w-max">
