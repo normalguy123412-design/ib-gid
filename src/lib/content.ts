@@ -60,6 +60,7 @@ export const navItems: NavItem[] = [
       { title: "Какие бывают угрозы", href: "#threats" },
     ],
   },
+  { title: "Словарик", href: "#glossary" },
   { title: "Угрозы", href: "#threats" },
   {
     title: "Защита",
@@ -71,7 +72,6 @@ export const navItems: NavItem[] = [
     ],
   },
   { title: "Демо", href: "#demos" },
-  { title: "Словарик", href: "#glossary" },
   { title: "Частые ошибки", href: "#mistakes" },
   { title: "Если произошло", href: "#emergency" },
   { title: "FAQ", href: "#faq" },
