@@ -8,17 +8,26 @@ import { glossary } from "@/lib/content"
  * Цвет рамки по группе. Отдельные плашки-подзаголовки съедали высоту,
  * поэтому группа обозначена цветом рамки, а расшифровка — легендой
  * в одну строку.
+ *
+ * Насыщенность поднята с 30% до 50%: на 30% рамки трёх групп были
+ * неразличимы, и легенда выглядела украшением, а не расшифровкой.
  */
 const TONES = {
-  база: "border-sky-500/30",
-  атаки: "border-destructive/30",
-  защита: "border-emerald-500/30",
+  база: "border-sky-500/50",
+  атаки: "border-destructive/50",
+  защита: "border-emerald-500/50",
 } as const
 
+/**
+ * Подписи групп названы по вопросу, на который отвечает каждая:
+ * «Основы» — что это такое, «Атаки» — от чего защищаться,
+ * «Защита» — чем. Раньше стояли слова «база / атаки / защита», и по ним
+ * нельзя было понять, куда отнесён тот или иной термин.
+ */
 const LEGEND: { key: keyof typeof TONES; label: string }[] = [
-  { key: "база", label: "база" },
-  { key: "атаки", label: "атаки" },
-  { key: "защита", label: "защита" },
+  { key: "база", label: "Основы — что это" },
+  { key: "атаки", label: "Атаки — от чего беречься" },
+  { key: "защита", label: "Защита — чем" },
 ]
 
 /**
@@ -51,10 +60,12 @@ export function Glossary() {
           </div>
 
           {/* Легенда групп: рамка карточки показывает, к чему относится термин. */}
-          <ul className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
             {LEGEND.map((item) => (
               <li key={item.key} className="flex items-center gap-1.5">
-                <span className={cn("size-2.5 rounded-sm border", TONES[item.key])} />
+                <span
+                  className={cn("size-2.5 rounded-sm border-2 bg-transparent", TONES[item.key])}
+                />
                 {item.label}
               </li>
             ))}
