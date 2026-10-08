@@ -1,9 +1,12 @@
 import { AuroraHero } from "@/components/aurora-hero"
+import { Checklist } from "@/components/checklist"
 import { CoreFeatures } from "@/components/core-features"
 import { DefenseMethods } from "@/components/defense-methods"
 import { FaqWithCategories } from "@/components/faq-with-categories"
 import { FeaturesBento } from "@/components/features-bento"
 import { Glossary } from "@/components/glossary"
+import { HowItWorks } from "@/components/how-it-works"
+import { NumbersStrip } from "@/components/numbers-strip"
 import { ScrollRail } from "@/components/scroll-rail"
 import { SecurityDemos } from "@/components/security-demos"
 import { SecurityWorld } from "@/components/security-world"
@@ -14,7 +17,8 @@ import { StartHere } from "@/components/start-here"
  * Одностраничный сайт «ИБ-Гид».
  *
  * Порядок секций повторяет учебный путь читателя:
- * с чего начать → понятия → угрозы → защита → демо → словарик → FAQ.
+ * старт → понятия → угрозы → защита → как это работает → демо →
+ * словарик → цифры → чек-лист → FAQ.
  * Верхней навигационной панели нет: разделы переключаются точками в нижней
  * полосе прогресса (см. ScrollRail), а `id` секций должны совпадать
  * с `href` в `navItems` (см. src/lib/content.ts).
@@ -37,11 +41,17 @@ export default function Home() {
         <FeaturesBento />
         {/* 4. #defense — методы защиты и фреймворки */}
         <DefenseMethods />
-        {/* 5. #demos — 2FA и настройка безопасности аккаунта */}
+        {/* 5. #how — липкая схема пути запроса и пять шагов */}
+        <HowItWorks />
+        {/* 6. #demos — 2FA и настройка безопасности аккаунта */}
         <SecurityDemos />
-        {/* 6. #glossary — расшифровка терминов простым языком */}
+        {/* 7. #glossary — расшифровка терминов простым языком */}
         <Glossary />
-        {/* 7. #faq — аккордеон с часто задаваемыми вопросами */}
+        {/* 8. #numbers — коротко о главном в цифрах */}
+        <NumbersStrip stats={numbers} />
+        {/* 9. #checklist — три конкретных действия на сегодня */}
+        <Checklist />
+        {/* 10. #faq — вопросы по темам */}
         <FaqWithCategories />
       </main>
 
@@ -53,3 +63,15 @@ export default function Home() {
     </>
   )
 }
+
+/**
+ * Числа для полосы «в цифрах». Считаются из данных сайта, чтобы не
+ * выдумывать статистику: сколько шагов в схеме, сколько терминов
+ * в словарике, сколько знаков в коде подтверждения.
+ */
+const numbers = [
+  { value: 5, label: "шагов проходит запрос через защиту" },
+  { value: 21, label: "термина расшифровано в словарике" },
+  { value: 6, suffix: " цифр", label: "в коде подтверждения входа" },
+  { value: 3, label: "действия, которые закроют почти всё" },
+]

@@ -1,5 +1,10 @@
 import Link from "next/link"
-import { ArrowRightIcon, SparklesIcon } from "lucide-react"
+import {
+  ArrowRightIcon,
+  ChevronDownIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+} from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Enter } from "@/components/reveal"
@@ -40,9 +45,14 @@ export function AuroraHero() {
         </Enter>
 
         <Enter index={2} className="mt-6 w-full">
+          {/* Акцентная строка — как на референсном сайте. */}
+          <p className="mx-auto mb-4 font-heading text-lg font-medium tracking-tight text-foreground/90 sm:text-xl">
+            Три шага, которые закроют почти все риски
+          </p>
           <p className="mx-auto max-w-2xl text-base text-pretty text-muted-foreground sm:text-lg">
-            Что это такое, от кого надо защищаться и что сделать прямо сейчас —
-            без сложных терминов и технического образования.
+            Что такое информационная безопасность, от кого надо защищаться и
+            что сделать прямо сейчас — без сложных терминов и технического
+            образования.
           </p>
         </Enter>
 
@@ -78,8 +88,28 @@ export function AuroraHero() {
               </div>
             ))}
           </dl>
+
+          {/* Мета-строка и подсказка «листайте ниже». */}
+          <p className="mt-6 flex items-center justify-center gap-2 font-mono text-xs text-muted-foreground">
+            <ShieldCheckIcon className="size-3.5" />
+            Читается за 10 минут · без регистрации
+          </p>
         </Enter>
       </div>
+
+      {/* Якорь «листайте ниже» с анимацией. */}
+      <a
+        href="#start"
+        aria-label="Листать ниже"
+        className="group absolute inset-x-0 bottom-6 mx-auto flex w-fit flex-col items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <span className="font-mono text-[0.65rem] uppercase tracking-widest">
+          вниз
+        </span>
+        <span className="grid size-8 place-items-center rounded-full border transition-colors group-hover:border-primary">
+          <ChevronDownIcon className="size-4 animate-bounce" />
+        </span>
+      </a>
     </section>
   )
 }

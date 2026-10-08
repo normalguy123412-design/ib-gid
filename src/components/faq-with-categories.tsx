@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import {
   Accordion,
   AccordionContent,
@@ -8,66 +7,63 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Section, SectionHeader } from "@/components/section"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Parallax } from "@/components/parallax"
+import { Badge } from "@/components/ui/badge"
+import { cn } from "cn"
 import { faqCategories } from "@/lib/content"
 
 /**
  * СЕКЦИЯ «FAQ» (#faq).
  *
- * Вопросы сгруппированы по вкладкам (Основы, Угрозы, Защита, Практика),
- * внутри каждой группы ответы раскрываются аккордеоном.
+ * Вопросы сгруппированы по темам, каждая тема — отдельная колонка
+ * с раскрывающимися ответами. Ответы можно раскрыть все сразу
+ * (тип multiple), чтобы не искать нужный.
  */
 export function FaqWithCategories() {
-  const [tab, setTab] = React.useState(faqCategories[0].id)
-
   return (
     <Section id="faq">
       <SectionHeader
-        eyebrow="07 — FAQ"
+        eyebrow="08 — FAQ"
         title="Частые вопросы"
         description="Короткие ответы без терминов. Если чего-то не нашлось — начните с блока «С чего начать» или загляните в словарик."
       />
 
-      <Tabs
-        value={tab}
-        onValueChange={setTab}
-        className="mt-10 gap-6 sm:mt-14"
-      >
-        <TabsList variant="line" className="w-full justify-start overflow-x-auto">
-          {faqCategories.map((category) => (
-            <TabsTrigger
-              key={category.id}
-              value={category.id}
-              className="gap-1.5 px-3"
-            >
-              <category.icon className="size-4" />
-              {category.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      <div className="mt-10 grid gap-8 sm:mt-14 md:grid-cols-2">
+        {faqCategories.map((category, ci) => (
+          <div key={category.id} className="flex flex-col gap-3">
+            <Parallax speed={0.16 - ci * 0.05}>
+              <Badge
+                variant="outline"
+                className="gap-1.5 font-normal"
+              >
+                <category.icon className="size-3.5" />
+                {category.label}
+              </Badge>
+            </Parallax>
 
-        {faqCategories.map((category) => (
-          <TabsContent key={category.id} value={category.id}>
             <Accordion
-              type="single"
-              collapsible
-              className="w-full"
-              defaultValue="faq-0"
+              type="multiple"
+              defaultValue={category.items.map((_, i) => `${category.id}-${i}`)}
+              className={cn("w-full")}
             >
               {category.items.map((item, index) => (
-                <AccordionItem key={item.question} value={`faq-${index}`}>
-                  <AccordionTrigger className="py-4 text-base">
+                <AccordionItem
+                  key={item.question}
+                  value={`${category.id}-${index}`}
+                  className="px-0 first:border-t-0"
+                >
+                  <AccordionTrigger className="py-4 text-left text-sm hover:no-underline">
                     {item.question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-pretty text-muted-foreground">
+                  <AccordionContent className="text-pretty text-sm text-muted-foreground">
                     {item.answer}
                   </AccordionContent>
                 </AccordionItem>
               ))}
             </Accordion>
-          </TabsContent>
+          </div>
         ))}
-      </Tabs>
+      </div>
     </Section>
   )
 }

@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { MailIcon, ShieldCheckIcon } from "lucide-react"
+import { ExternalLinkIcon, ShieldCheckIcon } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { extraResources, frameworks, navItems, site } from "@/lib/content"
 import { getCurrentYear } from "@/lib/current-year"
@@ -7,98 +7,118 @@ import { getCurrentYear } from "@/lib/current-year"
 /**
  * ПОДВАЛ САЙТА.
  *
- * Колонки: логотип и контакты, «Разделы» (якорные ссылки),
- * «Ресурсы» (NIST, OWASP, MITRE ATT&CK, CISA) и справочные стандарты.
- * Год берётся на сервере, чтобы не вызывать расхождение при гидратации.
+ * Компоновка повторяет референсный: слева логотип, в центре длинный
+ * поясняющий текст со ссылками на источники, справа — строка моноширинных
+ * ссылок. Отступ снизу оставляет место под нижнюю полосу прогресса.
  */
 export async function SiteFooter() {
   const year = getCurrentYear()
 
   return (
-    // Отступ снизу — чтобы подвал не перекрывался нижней полосой прогресса.
     <footer className="relative z-10 border-t bg-background/70 pb-28 backdrop-blur-sm">
-      <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6">
-        <div className="grid gap-10 md:grid-cols-4">
-          <div className="flex flex-col gap-3 md:col-span-1">
-            <Link href="#top" className="flex items-center gap-2 font-heading font-semibold">
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+        <div className="flex flex-col gap-8 py-12 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
+          {/* Логотип и разделы. */}
+          <div className="flex shrink-0 flex-col gap-5">
+            <Link href="#top" className="flex w-fit items-center gap-2">
               <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
                 <ShieldCheckIcon className="size-4" />
               </span>
-              {site.name}
+              <span className="font-heading text-base font-semibold tracking-tight">
+                {site.name}
+              </span>
             </Link>
-            <p className="max-w-xs text-xs text-pretty text-muted-foreground">
-              {site.description}
-            </p>
-            <a
-              href="mailto:security@example.org"
-              className="inline-flex w-fit items-center gap-1.5 text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-            >
-              <MailIcon className="size-3.5" />
-              security@example.org
-            </a>
+
+            <nav className="flex flex-col gap-2" aria-label="Разделы">
+              <p className="font-heading text-sm font-medium">Разделы</p>
+              <ul className="flex flex-col gap-1.5">
+                {navItems.map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className="text-xs text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                    >
+                      {item.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
           </div>
 
-          <nav className="flex flex-col gap-3">
-            <h2 className="font-heading text-sm font-medium">Разделы</h2>
-            <ul className="flex flex-col gap-2">
-              {navItems.map((item) => (
-                <li key={item.title}>
-                  <Link
-                    href={item.href}
-                    className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-                  >
-                    {item.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          {/* Пояснительный текст и список ресурсов. */}
+          <div className="flex flex-col gap-6 lg:max-w-2xl">
+            <div className="flex flex-col gap-2">
+              <p className="font-heading text-sm font-medium">Ресурсы</p>
+              <ul className="flex flex-wrap gap-x-4 gap-y-1.5">
+                {frameworks.map((framework) => (
+                  <li key={framework.title}>
+                    <a
+                      href={framework.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                    >
+                      {framework.title}
+                      <ExternalLinkIcon className="size-3" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-          <nav className="flex flex-col gap-3">
-            <h2 className="font-heading text-sm font-medium">Ресурсы</h2>
-            <ul className="flex flex-col gap-2">
-              {frameworks.map((framework) => (
-                <li key={framework.title}>
+            <Separator />
+
+            <p className="text-xs text-pretty leading-relaxed text-muted-foreground">
+              Учебный материал по информационной безопасности. Сайт{" "}
+              {site.description.toLowerCase()} Разбор тем опирается на{" "}
+              {frameworks.slice(0, 2).map((f, i) => (
+                <span key={f.title}>
+                  {i > 0 ? " и " : ""}
                   <a
-                    href={framework.href}
+                    href={f.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                    className="underline underline-offset-4 transition-colors hover:text-foreground"
                   >
-                    {framework.title}
+                    {f.title}
                   </a>
-                </li>
+                </span>
               ))}
-            </ul>
-          </nav>
+              . Иконки —{" "}
+              <a
+                href="https://lucide.dev"
+                target="_blank"
+                rel="noreferrer"
+                className="underline underline-offset-4 transition-colors hover:text-foreground"
+              >
+                Lucide
+              </a>
+              , сборка — Next.js и Tailwind CSS.
+            </p>
 
-          <div className="flex flex-col gap-3">
-            <h2 className="font-heading text-sm font-medium">Стандарты</h2>
-            <ul className="flex flex-col gap-3">
-              {extraResources.map((resource) => (
-                <li key={resource.title} className="flex items-start gap-2">
-                  <resource.icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
-                  <span className="flex flex-col">
-                    <span className="text-xs font-medium">{resource.title}</span>
-                    <span className="text-xs text-pretty text-muted-foreground">
-                      {resource.text}
-                    </span>
-                  </span>
+            <ul className="flex flex-wrap gap-x-4 gap-y-1.5 font-mono text-xs">
+              {extraResources.slice(0, 4).map((resource) => (
+                <li
+                  key={resource.title}
+                  className="flex items-center gap-1.5 text-muted-foreground"
+                >
+                  <resource.icon className="size-3" />
+                  {resource.title}
                 </li>
               ))}
             </ul>
           </div>
         </div>
 
-        <Separator className="my-8" />
+        <Separator />
 
-        <div className="flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {year} {site.name}. Учебный проект по информационной безопасности.
+            © {year} {site.name}. Материалы носят справочный характер.
           </p>
           <p>
-            Материалы носят справочный характер. Для реальных внедрений
-            обращайтесь к профильным стандартам и специалистам.
+            Сделано без внешних изображений — только SVG и CSS-градиенты.
           </p>
         </div>
       </div>
