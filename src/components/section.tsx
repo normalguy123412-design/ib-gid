@@ -14,6 +14,10 @@ import { cn } from "cn"
  * дочитывает панель, а потом, на её краю, перехватывает страницу и
  * двигает ленту дальше.
  *
+ * Полоса прокрутки внутри панели спрятана: иначе у каждой из
+ * четырнадцати панелей торчал бы свой системный скроллбар. Сама
+ * прокрутка работает — колесо и свайп по панели.
+ *
  * Центрирование сделано на `my-auto`, а не на `justify-center`: при
  * переполнении `justify-center` обрезает верх панели и до него
  * нельзя доскроллить, а автоматические поля в таком случае просто
@@ -32,14 +36,21 @@ export function Section({
     <section
       id={id}
       className={cn(
-        // Полоса прокрутки внутри панели спрятана: иначе у каждой из
-        // четырнадцати панелей торчал бы свой системный скроллбар и
-        // «полосатое» поле уходило далеко за край экрана. Сама
-        // прокрутка работает — колесо и свайп по панели.
-        "h-full w-screen shrink-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border-r",
+        "relative h-full w-screen shrink-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
         className
       )}
     >
+      {/*
+        Разделение панелей. Раньше здесь стояла рамка `border-r`, и при
+        прокрутке её вертикальная линия проходила через весь экран —
+        читалась как полоса поверх вёрстки. Теперь края плавно уходят в
+        фон градиентом: границы видно, но линия не режет кадр.
+      */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-background to-transparent"
+      />
+
       <div className="flex min-h-full w-full flex-col px-4 py-10 sm:px-6">
         <div className="mx-auto my-auto w-full max-w-6xl">
           <Reveal>{children}</Reveal>

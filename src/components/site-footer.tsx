@@ -15,7 +15,7 @@ export async function SiteFooter() {
   const year = getCurrentYear()
 
   return (
-    <footer className="relative z-10 h-full w-screen shrink-0 overflow-y-auto border-r bg-background/70 pb-28 backdrop-blur-sm">
+    <footer className="relative z-10 h-full w-screen shrink-0 overflow-y-auto bg-background/70 pb-28 backdrop-blur-sm">
       <div className="flex min-h-full w-full flex-col px-4 sm:px-6">
         <div className="mx-auto my-auto w-full max-w-6xl">
         <div className="flex flex-col gap-8 py-12 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
