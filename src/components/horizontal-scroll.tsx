@@ -178,13 +178,23 @@ export function HorizontalScroll({
       const target = document.getElementById(id)
       if (!target || maxX === 0) return
 
-      // Сдвиг ленты равен прокрутке один в один, поэтому нужная позиция
-      // равна смещению панели от начала ленты — без долей и пересчётов.
-      window.scrollTo({
-        top: Math.min(target.offsetLeft, maxX),
-        behavior: smooth ? "smooth" : "auto",
-      })
-      if (id) window.history.replaceState(null, "", `#${id}`)
+      const top = Math.min(target.offsetLeft, maxX)
+
+      if (smooth) {
+        window.scrollTo({ top, behavior: "smooth" })
+      } else {
+        // На html стоит scroll-behavior: smooth, и он перекрывает
+        // behavior: "auto" — браузер всё равно анимирует переход. Для
+        // установки начальной позиции по прямой ссылке анимация не
+        // нужна и только мешает: страница успевает отрисоваться не там.
+        const root = document.documentElement
+        const previous = root.style.scrollBehavior
+        root.style.scrollBehavior = "auto"
+        window.scrollTo({ top, behavior: "auto" })
+        root.style.scrollBehavior = previous
+      }
+
+      window.history.replaceState(null, "", `#${id}`)
     },
     [maxX]
   )
