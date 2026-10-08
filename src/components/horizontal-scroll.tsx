@@ -165,6 +165,15 @@ export function HorizontalScroll({
     [maxX]
   )
 
+  /** Переход на конкретное смещение страницы — им же пользуются стрелки. */
+  const scrollToOffset = React.useCallback(
+    (top: number, id?: string) => {
+      window.scrollTo({ top, behavior: "smooth" })
+      if (id) window.history.replaceState(null, "", `#${id}`)
+    },
+    []
+  )
+
   // Переход по ссылке вида «#threats» превращаем в горизонтальную
   // прокрутку. Обработчик один на всю ленту, поэтому менять приходится
   // не двадцать ссылок в компонентах, а одно место здесь.
@@ -196,8 +205,13 @@ export function HorizontalScroll({
    * Шаг по панелям клавишами-стрелками.
    *
    * Без этого приходилось бы подкручивать колёсико точно до нужного
-   * раздела. Нажатие вправо переходит на следующую панель, влево — на
-   * предыдущую, то есть ровно на один шаг ленты.
+   * места. Вправо — на один экран вперёд, влево — на один назад.
+   *
+   * Важно: шагать нужно по экранам, а не по панелям. Плотные разделы
+   * занимают несколько экранов по ширине (см. screens в Section), и если
+   * считать только панели, стрелка перескакивала такой раздел целиком —
+   * из словарика сразу попадали в «Угрозы», а его второй экран оставался
+   * недостижимым.
    */
   React.useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -210,31 +224,44 @@ export function HorizontalScroll({
         return
       }
 
+      const viewport = document.documentElement.clientWidth
       const panels = Array.from(
         trackRef.current?.querySelectorAll<HTMLElement>("[data-panel]") ?? []
       )
-      if (!panels.length) return
+      if (!panels.length || viewport === 0) return
 
-      // Текущая панель — последняя, чей левый край уже пройден.
+      // Раскладываем панели на отдельные остановки — по одной на экран.
+      const stops: { top: number; id: string }[] = []
+      for (const panel of panels) {
+        const columns = Math.max(1, Math.round(panel.offsetWidth / viewport))
+        for (let i = 0; i < columns; i += 1) {
+          stops.push({
+            top: Math.min(panel.offsetLeft + i * viewport, maxX),
+            id: panel.id,
+          })
+        }
+      }
+
+      // Текущая остановка — последняя, чья начало уже пройдено.
       const position = window.scrollY
       let index = 0
-      panels.forEach((panel, i) => {
-        if (panel.offsetLeft <= position + 1) index = i
+      stops.forEach((stop, i) => {
+        if (stop.top <= position + 1) index = i
       })
 
       const next =
         event.key === "ArrowRight"
-          ? Math.min(index + 1, panels.length - 1)
+          ? Math.min(index + 1, stops.length - 1)
           : Math.max(index - 1, 0)
 
       if (next === index) return
       event.preventDefault()
-      scrollToSection(panels[next].id)
+      scrollToOffset(stops[next].top, stops[next].id)
     }
 
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
-  }, [scrollToSection])
+  }, [maxX, scrollToOffset])
 
   const value = React.useMemo(
     () => ({ scrollToSection, maxX, progress: scrollYProgress }),

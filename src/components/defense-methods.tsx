@@ -1,5 +1,4 @@
-﻿import Link from "next/link"
-import { ArrowUpRightIcon, CheckIcon } from "lucide-react"
+﻿import { CheckIcon } from "lucide-react"
 import { Section, SectionHeader } from "@/components/section"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -10,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { defenseCategories, defenseMechanisms, frameworks } from "@/lib/content"
+import { defenseCategories, defenseMechanisms } from "@/lib/content"
 
 /**
  * СЕКЦИЯ «ЗАЩИТА» (#defense).
@@ -28,7 +27,7 @@ import { defenseCategories, defenseMechanisms, frameworks } from "@/lib/content"
  */
 export function DefenseMethods() {
   return (
-    <Section id="defense" label="Защита" screens={4}>
+    <Section id="defense" label="Защита" screens={3}>
       <div className="flex h-full w-full gap-10">
         <div className="flex h-full w-[calc(100vw-4rem)] shrink-0 flex-col justify-center">
           <SectionHeader
@@ -82,7 +81,7 @@ export function DefenseMethods() {
         </div>
 
         {/* Ключевые механизмы защиты. */}
-        <div className="flex h-full w-[calc(100vw-4rem)] shrink-0 flex-col justify-center gap-5">
+        <div className="flex h-full w-[calc(100vw-3rem)] shrink-0 flex-col justify-center gap-5">
           <h3 className="font-heading text-2xl font-semibold tracking-tight">
             Ключевые механизмы защиты
           </h3>
@@ -106,42 +105,6 @@ export function DefenseMethods() {
                       </Badge>
                     ))}
                   </div>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Фреймворки и базы знаний. */}
-        <div className="flex h-full w-[calc(100vw-4rem)] shrink-0 flex-col justify-center gap-5">
-          <h3 className="font-heading text-2xl font-semibold tracking-tight">
-            Фреймворки и базы знаний
-          </h3>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {frameworks.map((framework) => (
-              <Card
-                key={framework.title}
-                className="group relative overflow-hidden"
-              >
-                <CardHeader>
-                  <span className="grid size-10 place-items-center rounded-lg bg-muted text-foreground">
-                    <framework.icon className="size-4.5" />
-                  </span>
-                  <CardTitle className="text-sm">{framework.title}</CardTitle>
-                  <CardDescription className="text-xs text-pretty">
-                    {framework.text}
-                  </CardDescription>
-                </CardHeader>
-                <CardFooter className="border-t-0 bg-transparent pt-0">
-                  <Link
-                    href={framework.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-xs font-medium text-primary underline-offset-4 hover:underline"
-                  >
-                    Открыть
-                    <ArrowUpRightIcon className="size-3.5" />
-                  </Link>
                 </CardFooter>
               </Card>
             ))}

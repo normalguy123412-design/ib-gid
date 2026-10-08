@@ -3,7 +3,6 @@ import { Checklist } from "@/components/checklist"
 import { CommonMistakes } from "@/components/common-mistakes"
 import { CoreFeatures } from "@/components/core-features"
 import { DefenseMethods } from "@/components/defense-methods"
-import { FaqWithCategories } from "@/components/faq-with-categories"
 import { FeaturesBento } from "@/components/features-bento"
 import { Glossary } from "@/components/glossary"
 import { HorizontalScroll } from "@/components/horizontal-scroll"
@@ -63,10 +62,7 @@ export default function Home() {
           {/* 11. #mistakes — памятка: частые ошибки и что делать вместо них */}
           <CommonMistakes />
           {/* 12. #emergency — первые шаги, если неприятность уже случилась */}
-          <IfItHappens />
-          {/* 13. #faq — вопросы по темам */}
-          <FaqWithCategories />
-        </main>
+          <IfItHappens />        </main>
 
         {/* Подвал: разделы, ресурсы и копирайт. Последняя панель ленты. */}
         <SiteFooter />

@@ -4,108 +4,86 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn } from "cn"
 import { glossary } from "@/lib/content"
 
-const GROUPS = {
-  база: {
-    label: "Базовые термины",
-    tone: "border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-300",
-  },
-  атаки: {
-    label: "Атаки и угрозы",
-    tone: "border-destructive/30 bg-destructive/10 text-destructive",
-  },
-  защита: {
-    label: "Средства защиты",
-    tone: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300",
-  },
+/**
+ * Цвет рамки по группе. Отдельные плашки-подзаголовки съедали высоту,
+ * поэтому группа обозначена цветом рамки, а расшифровка — легендой
+ * в одну строку.
+ */
+const TONES = {
+  база: "border-sky-500/30",
+  атаки: "border-destructive/30",
+  защита: "border-emerald-500/30",
 } as const
 
-type GroupKey = keyof typeof GROUPS
+const LEGEND: { key: keyof typeof TONES; label: string }[] = [
+  { key: "база", label: "база" },
+  { key: "атаки", label: "атаки" },
+  { key: "защита", label: "защита" },
+]
 
 /**
  * СЕКЦИЯ «СЛОВАРИК» (#glossary).
  *
- * Новичку мешает не сама информация, а неизвестные термины, поэтому
- * каждый термин раскрывается одной короткой фразой.
+ * Все термины умещаются в один экран: три ряда квадратов по семь штук.
+ * Раньше словарик занимал два экрана, и до второй половины приходилось
+ * доезжать вручную; теперь это один взгляд — вся справочная таблица
+ * видна целиком.
  *
- * Раньше термины шли группой на весь экран, и боксы уезжали за правый
- * край — на экране оставался только заголовок и пустое чёрное поле.
- * Теперь всё ужато: карточки мелкие, в четыре колонки, и на первом
- * экране сразу видны десять штук вместе с заголовком. Раздел занимает
- * два экрана и раскрывается вправо, как и весь сайт.
+ * Квадраты вместо прямоугольников — по той же причине, что и три ряда:
+ * одинаковые по высоте ячейки позволяют ужать сетку и уместить всё
+ * без вертикальной прокрутки, которой на сайте теперь нет.
  */
 export function Glossary() {
-  // Первый экран — «база» и «атаки», второй — «защита».
-  const screens: GroupKey[][] = [["база", "атаки"], ["защита"]]
-
   return (
-    <Section id="glossary" label="Словарик" screens={screens.length}>
-      <div className="flex h-full w-full gap-8">
-        {screens.map((keys, screenIndex) => (
-          <div
-            key={screenIndex}
-            className="flex h-full w-[calc(100vw-3rem)] shrink-0 flex-col justify-center gap-6"
-          >
-            {/* Заголовок только на первом экране и компактный: он не должен
-                съедать половину панели, оставляя пустое поле. */}
-            {screenIndex === 0 ? (
-              <header className="flex flex-col gap-1.5">
-                <Badge
-                  variant="outline"
-                  className="w-fit font-mono text-[0.7rem] uppercase"
-                >
-                  05 — Словарик
-                </Badge>
-                <h2 className="font-heading text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-                  Что значат все эти сокращения
-                </h2>
-                <p className="max-w-2xl text-sm text-pretty text-muted-foreground">
-                  Коротко и без технического образования. Листайте вправо.
-                </p>
-              </header>
-            ) : null}
-
-            {keys.map((key) => {
-              const items = glossary.filter((entry) => entry.category === key)
-              const group = GROUPS[key]
-              return (
-                <div key={key} className="flex flex-col gap-2.5">
-                  <Badge
-                    variant="outline"
-                    className={cn("w-fit font-normal", group.tone)}
-                  >
-                    {group.label} · {items.length}
-                  </Badge>
-
-                  <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
-                    {items.map((entry) => (
-                      <Card
-                        key={entry.term}
-                        className="gap-1 border-border/70 bg-card/50 py-2.5 transition-colors hover:border-primary/40"
-                      >
-                        <CardHeader className="px-3">
-                          <CardTitle className="font-mono text-xs">
-                            {entry.term}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="px-3">
-                          <CardDescription className="text-xs text-pretty leading-snug text-muted-foreground">
-                            {entry.plain}
-                          </CardDescription>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
-
-            {screenIndex < screens.length - 1 ? (
-              <p className="font-mono text-xs text-muted-foreground">
-                {screenIndex + 1} / {screens.length}
-              </p>
-            ) : null}
+    <Section id="glossary" label="Словарик" screens={1}>
+      <div className="flex h-full flex-col justify-center gap-4">
+        <header className="flex flex-wrap items-baseline justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <Badge
+              variant="outline"
+              className="w-fit font-mono text-[0.7rem] uppercase"
+            >
+              05 — Словарик
+            </Badge>
+            <h2 className="font-heading text-xl font-semibold tracking-tight sm:text-2xl">
+              Что значат все эти сокращения
+            </h2>
           </div>
-        ))}
+
+          {/* Легенда групп: рамка карточки показывает, к чему относится термин. */}
+          <ul className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+            {LEGEND.map((item) => (
+              <li key={item.key} className="flex items-center gap-1.5">
+                <span className={cn("size-2.5 rounded-sm border", TONES[item.key])} />
+                {item.label}
+              </li>
+            ))}
+          </ul>
+        </header>
+
+        {/* Три ряда по семь квадратов — вся таблица сразу на экране. */}
+        <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 lg:grid-cols-7">
+          {glossary.map((entry) => (
+            <Card
+              key={entry.term}
+              className={cn(
+                "aspect-square gap-1 bg-card/50 py-2 transition-colors hover:bg-card",
+                TONES[entry.category]
+              )}
+            >
+              <CardHeader className="px-2.5">
+                <CardTitle className="font-mono text-[0.7rem] leading-tight">
+                  {entry.term}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-2.5">
+                <CardDescription className="text-[0.7rem] leading-snug text-pretty text-muted-foreground">
+                  {entry.plain}
+                </CardDescription>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </Section>
   )
