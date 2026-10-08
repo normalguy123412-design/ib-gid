@@ -15,7 +15,7 @@ export async function SiteFooter() {
   const year = getCurrentYear()
 
   return (
-    <footer className="relative z-10 h-full w-screen shrink-0 overflow-y-auto bg-background/70 pb-28 backdrop-blur-sm">
+    <footer className="relative z-10 h-full w-screen shrink-0 overflow-hidden bg-background/70 pb-24 backdrop-blur-sm">
       <span
         aria-hidden
         className="pointer-events-none absolute inset-0 flex select-none items-center justify-center overflow-hidden"
