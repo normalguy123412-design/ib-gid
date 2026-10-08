@@ -1,5 +1,4 @@
 ﻿import { Section, SectionHeader } from "@/components/section"
-import { Parallax } from "@/components/parallax"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -29,32 +28,42 @@ const GROUPS = {
  * Расшифровка сокращений простым языком. Новичку обычно мешает не сама
  * информация, а неизвестные термины, поэтому здесь каждое сокращение
  * раскрывается одной фразой и группируется по смыслу.
+ *
+ * Терминов 21, а экран один — в вертикальном виде список уходил вниз и
+ * раздел приходилось дочитывать отдельной прокруткой. Поэтому панель
+ * занимает четыре экрана по ширине: первый отдан заголовку и группе
+ * «База», дальше идут «Атаки» и «Средства защиты». Листается только
+ * вправо, по вертикали ничего не прокручивается.
  */
 export function Glossary() {
-  return (
-    <Section id="glossary" label="Словарик">
-      <SectionHeader
-        eyebrow="05 — Словарик"
-        title="Что значат все эти сокращения"
-        description="Словарик, к которому можно вернуться в любой момент. Каждый термин объяснён так, чтобы было понятно без технического образования."
-      />
+  const groups = Object.keys(GROUPS) as (keyof typeof GROUPS)[]
 
-      <div className="mt-10 flex flex-col gap-10 sm:mt-14">
-        {(Object.keys(GROUPS) as (keyof typeof GROUPS)[]).map((key, gi) => {
+  return (
+    <Section id="glossary" label="Словарик" screens={4}>
+      {/* Первый экран: заголовок и начало списка. */}
+      <div className="flex h-full w-full gap-10">
+        <div className="flex h-full w-[calc(100vw-4rem)] shrink-0 flex-col justify-center">
+          <SectionHeader
+            eyebrow="05 — Словарик"
+            title="Что значат все эти сокращения"
+            description="Словарик, к которому можно вернуться в любой момент. Каждый термин объяснён так, чтобы было понятно без технического образования."
+          />
+        </div>
+
+        {/* Дальше — по экрану на группу. */}
+        {groups.map((key, index) => {
           const items = glossary.filter((entry) => entry.category === key)
           const group = GROUPS[key]
           return (
-            <div key={key}>
-              <Parallax speed={0.16 - gi * 0.06}>
-                <Badge
-                  variant="outline"
-                  className={cn("mb-4 font-normal", group.tone)}
-                >
-                  {group.label} · {items.length}
-                </Badge>
-              </Parallax>
+            <div
+              key={key}
+              className="flex h-full w-[calc(100vw-4rem)] shrink-0 flex-col justify-center gap-5"
+            >
+              <Badge variant="outline" className={cn("w-fit font-normal", group.tone)}>
+                {group.label} · {items.length}
+              </Badge>
 
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 lg:grid-cols-2">
                 {items.map((entry) => (
                   <Card key={entry.term} className="h-full">
                     <CardHeader>
@@ -70,6 +79,11 @@ export function Glossary() {
                   </Card>
                 ))}
               </div>
+
+              {/* Номер колонки — видно, что список ещё не кончился. */}
+              <p className="font-mono text-xs text-muted-foreground">
+                {index + 2} / {groups.length + 1}
+              </p>
             </div>
           )
         })}

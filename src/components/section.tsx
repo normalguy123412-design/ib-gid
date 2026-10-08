@@ -7,25 +7,20 @@ import { cn } from "cn"
  * Обёртка секции: якорь для навигации (#concepts, #threats и т.д.),
  * вертикальный отступ и появление контента при прокрутке.
  *
- * В горизонтальном режиме секция — это панель шириной в экран: она не
- * растёт по вертикали, а прокручивается внутри себя, если контента
- * больше одного экрана. Внутренние поля и `overflow-y-auto` в связке с
- * обычным поведением overscroll дают то, что нужно: колесо сначала
- * дочитывает панель, а потом, на её краю, перехватывает страницу и
- * двигает ленту дальше.
- *
- * Полоса прокрутки внутри панели спрятана: иначе у каждой из
- * четырнадцати панелей торчал бы свой системный скроллбар. Сама
- * прокрутка работает — колесо и свайп по панели.
+ * В горизонтальном режиме секция — это панель шириной в один или несколько
+ * экранов: вертикальной прокрутки внутри нет, листать нужно вправо.
+ * Разделы с большим объёмом растягиваются на несколько экранов и
+ * раскрываются колонка за колонкой (см. пропус screens).
  *
  * Центрирование сделано на `my-auto`, а не на `justify-center`: при
- * переполнении `justify-center` обрезает верх панели и до него
- * нельзя доскроллить, а автоматические поля в таком случае просто
+ * переполнении `justify-center` обрезает верх и до него нельзя
+ * доскроллить, а автоматические поля в таком случае просто
  * превращаются в отступ.
  */
 export function Section({
   id,
   label,
+  screens = 1,
   className,
   children,
 }: {
@@ -39,16 +34,24 @@ export function Section({
    * движение обеспечивает общий сдвиг ленты.
    */
   label?: string
+  /**
+   * Ширина панели в экранах.
+   *
+   * Раньше вертикальная прокрутка внутри панели закрывала нехватку
+   * места, но тогда сайт листался вниз, а это ломало идею: информация
+   * должна раскрываться вправо. Теперь панель не прокручивается вниз
+   * вовсе, а разделы с большим объёмом занимают несколько экранов по
+   * ширине — их колонки просто раскрываются одна за другой.
+   */
+  screens?: number
   className?: string
   children: React.ReactNode
 }) {
   return (
     <section
       id={id}
-      className={cn(
-        "relative h-full w-screen shrink-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-        className
-      )}
+      style={{ width: `${screens * 100}vw` }}
+      className={cn("relative h-full shrink-0 overflow-hidden", className)}
     >
       {label ? (
         <span
@@ -72,10 +75,19 @@ export function Section({
         className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-background to-transparent"
       />
 
-      <div className="relative flex min-h-full w-full flex-col px-4 py-10 sm:px-6">
-        <div className="mx-auto my-auto w-full max-w-6xl">
-          <Reveal>{children}</Reveal>
-        </div>
+      <div className="relative h-full w-full px-4 py-10 sm:px-6">
+        {/* В одну колонку содержимое центрируется по вертикали. В несколько —
+            панель занимает всю ширину, а колонки внутри неё раскрывает
+            сам раздел: так каждая следующая группа выходит справа. */}
+        <Reveal
+          className={cn(
+            "h-full w-full",
+            screens === 1 &&
+              "mx-auto flex max-w-6xl flex-col justify-center"
+          )}
+        >
+          {children}
+        </Reveal>
       </div>
     </section>
   )
