@@ -98,11 +98,13 @@ export function AuroraHero() {
       </div>
 
       {/* Якорь «листайте ниже» с анимацией. */}
-      <a
-        href="#start"
-        aria-label="Листать ниже"
-        className="group absolute inset-x-0 bottom-6 mx-auto flex w-fit flex-col items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
-      >
+        {/* Подсказка «листайте ниже». Отступ снизу задан с запасом на нижнюю
+            полосу прогресса, иначе значок наполовину уходил под неё. */}
+        <a
+          href="#start"
+          aria-label="Листать ниже"
+          className="group absolute inset-x-0 bottom-20 z-10 mx-auto flex w-fit flex-col items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+        >
         <span className="font-mono text-[0.65rem] uppercase tracking-widest">
           вниз
         </span>
