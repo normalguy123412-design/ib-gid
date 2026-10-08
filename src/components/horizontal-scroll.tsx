@@ -57,6 +57,7 @@ export function useHorizontalScroll(): HorizontalScrollValue | null {
 export function HorizontalScroll({
   children,
   background,
+  overlay,
 }: {
   children: React.ReactNode
   /**
@@ -65,6 +66,18 @@ export function HorizontalScroll({
    * двигаться в ту же сторону, что и содержимое.
    */
   background?: React.ReactNode
+  /**
+   * Элементы поверх ленты: нижняя полоса прогресса и подобное.
+   *
+   * Им обязательно нужен контекст прогресса, поэтому просто положить их
+   * рядом с HorizontalScroll нельзя — снаружи провайдера рельс не видел бы
+   * прогресс и считал бы активный раздел по вертикали, где у всех панелей
+   * одинаковый верх. При этом внутрь самого трека их класть тоже нельзя:
+   * трек трансформирован, а над transform `position: fixed` начинает
+   * отсчитываться не от экрана, а от трека, и полоса уехала бы вбок.
+   * Липкий экран трансформации не имеет, поэтому слот безопасный.
+   */
+  overlay?: React.ReactNode
 }) {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const trackRef = React.useRef<HTMLDivElement>(null)
@@ -188,6 +201,8 @@ export function HorizontalScroll({
           >
             {children}
           </motion.div>
+
+          {overlay}
         </div>
       </div>
     </HorizontalScrollContext.Provider>
