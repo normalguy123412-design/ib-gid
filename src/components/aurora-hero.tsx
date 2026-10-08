@@ -32,7 +32,7 @@ export function AuroraHero() {
       <div className="mx-auto flex w-full max-w-4xl flex-col items-center px-4 text-center sm:px-6">
         {/* Каскад появления: каждый следующий блок стартует с задержкой. */}
         <Enter index={0}>
-          <Badge variant="secondary" className="animate-float gap-1.5">
+              <Badge variant="secondary" className="anim-bob gap-1.5">
             <SparklesIcon className="size-3" />
             Простым языком · без технического образования
           </Badge>

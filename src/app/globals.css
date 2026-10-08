@@ -75,6 +75,10 @@
   --radius: 0.625rem;
   /* Мягкий свет над анимированным фоном (см. SecurityWorld). */
   --world-glow: oklch(0.62 0.14 235 / 0.1);
+  /* Фоновая сетка: сторона плитки, контраст заливки и затемнение краёв. */
+  --grid-tile: 56px;
+  --grid-ink: oklch(0 0 0 / 0.05);
+  --grid-vignette: oklch(0 0 0 / 0.22);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -106,6 +110,9 @@
   --ring: oklch(0.556 0 0);
   /* Свет над фоном в тёмной теме — холоднее и заметнее. */
   --world-glow: oklch(0.72 0.15 230 / 0.13);
+  /* На тёмном фоне сетку видно в отражении, поэтому она бледнее. */
+  --grid-ink: oklch(1 0 0 / 0.035);
+  --grid-vignette: oklch(0 0 0 / 0.55);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -125,11 +132,49 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+
+  /*
+    Фон перенесён с body на html: фон html виден всегда, а фон body
+    схлопывается при прокрутке. Здесь же живёт ползущая сетка —
+    conic-gradient рисует затенённые углы плитки, а сдвиг
+    background-position ровно на четыре плитки за цикл не показывает шва,
+    поэтому анимация бесконечна.
+  */
   html {
     @apply font-sans scroll-smooth;
+    background-color: var(--background);
+    background-image: conic-gradient(
+      from 90deg at 50% 50%,
+      var(--grid-ink) 25%,
+      transparent 0 50%,
+      var(--grid-ink) 0 75%,
+      transparent 0
+    );
+    background-size: var(--grid-tile) var(--grid-tile);
+    animation: grid-pan 13.333s linear infinite;
+  }
+
+  /* Фон body должен быть прозрачным, иначе он закроет сетку на html. */
+  body {
+    @apply text-foreground;
+  }
+
+  /*
+    Виньетка затемняет края, чтобы текст в центре читался.
+    Слой лежит на z-0: над сеткой и анимированным canvas, но под
+    содержимым — main поднят на z-10. Клики не перехватывает.
+  */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse at 50% 45%,
+      transparent 50%,
+      var(--grid-vignette) 100%
+    );
   }
 }
 
@@ -158,18 +203,94 @@
   }
 }
 
+/*
+  Ползущая сетка. Сдвиг за цикл кратен плитке (4 и 2 плитки), поэтому
+  шов не виден и анимация бесконечна. Диагональ пологая: на 2 плитки
+  вправо приходится 4 влево — та же траектория, что и у DDNet.
+  Сторона плитки задаётся --grid-tile, здесь ей же посчитан сдвиг.
+*/
 @keyframes grid-pan {
   from {
     background-position: 0 0;
   }
   to {
-    background-position: 48px 48px;
+    background-position: -224px 112px;
+  }
+}
+
+/*
+  Мелкие анимации состояний. Значения подобраны так, чтобы элементы
+  выглядели живыми, но не дёргались: поворот за секунду, пульс мягкий,
+  появление быстрое и без «отскока». Все они отключаются общим
+  правилом prefers-reduced-motion в конце файла.
+*/
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes bob {
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+}
+
+@keyframes tip-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@layer utilities {
+  .anim-spin {
+    animation: spin 1s linear infinite;
+  }
+  .anim-pulse {
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .anim-bob {
+    animation: bob 2.2s ease-in-out infinite;
+  }
+  .anim-slide-in {
+    animation: slide-in 0.16s ease-out;
+  }
+  .anim-pop-in {
+    animation: pop-in 0.18s ease-out;
+  }
+  .anim-tip {
+    animation: tip-in 0.12s ease-out;
   }
 }
 
 /*
   Доступность: системная настройка «уменьшить движение» отключает
-  все анимации и плавную прокрулку. Анимированный canvas-фон
+  все анимации и плавную прокрутку. Анимированный canvas-фон
   дополнительно проверяет её в JS и рисует статичный кадр.
 */
 @media (prefers-reduced-motion: reduce) {
