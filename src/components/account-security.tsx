@@ -88,8 +88,15 @@ export function AccountSecurity() {
   const percent = Math.round((doneCount / steps.length) * 100)
   const level = percent === 100 ? "max" : percent >= 50 ? "good" : "weak"
 
-  return (
-    <Card className="flex flex-col gap-0">
+  /*
+ * gap-0 здесь стоял, чтобы шапка и содержимое шли вплотную: карточка
+ * сама разносит их на --card-spacing. Но явно обнулённый промежуток
+ * прижимал полоску готовности к подписи «Email для восстановления» —
+ * между ними не оставалось ни пикселя. Теперь промежуток карточки
+ * остаётся в силе.
+ */
+return (
+    <Card className="[--card-spacing:--spacing(6)]">
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
           <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
@@ -124,13 +131,13 @@ export function AccountSecurity() {
         <Progress value={percent} />
       </CardHeader>
 
-      <CardContent className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1.5">
+      <CardContent className="flex flex-col gap-5">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="acc-email" className="text-xs">
             <AtSignIcon className="size-3.5 text-muted-foreground" />
             Email для восстановления
           </Label>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <Input
               id="acc-email"
               type="email"
@@ -161,12 +168,12 @@ export function AccountSecurity() {
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="acc-password" className="text-xs">
             <KeyRoundIcon className="size-3.5 text-muted-foreground" />
             Пароль
           </Label>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <div className="relative flex-1">
               <Input
                 id="acc-password"
@@ -206,7 +213,7 @@ export function AccountSecurity() {
           </p>
         </div>
 
-        <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/40 p-2.5">
+        <div className="flex items-center justify-between gap-4 rounded-lg border bg-muted/40 p-4">
           <Label htmlFor="acc-2fa" className="cursor-pointer text-xs">
             <FingerprintIcon className="size-3.5 text-muted-foreground" />
             Двухфакторная аутентификация — пароль плюс код из приложения
@@ -219,7 +226,7 @@ export function AccountSecurity() {
           />
         </div>
 
-        <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/40 p-2.5">
+        <div className="flex items-center justify-between gap-4 rounded-lg border bg-muted/40 p-4">
           <Label htmlFor="acc-id" className="cursor-pointer text-xs">
             <IdCardIcon className="size-3.5 text-muted-foreground" />
             Верификация личности — вернёт доступ при утере каналов восстановления

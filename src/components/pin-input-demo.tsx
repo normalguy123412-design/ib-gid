@@ -2,10 +2,9 @@
 
 import * as React from "react"
 import { toast } from "sonner"
+import { useTheme } from "next-themes"
 import {
   CopyIcon,
-  CornerDownLeftIcon,
-  DeleteIcon,
   RefreshCwIcon,
   SmartphoneIcon,
 } from "lucide-react"
@@ -13,7 +12,7 @@ import { useHydrated } from "@/hooks/use-hydrated"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { cn } from "cn"
+import { CodeSlots, type CodeSlotsPalette } from "@/components/code-slots"
 
 const LENGTH = 6
 
@@ -24,15 +23,49 @@ function randomCode() {
 }
 
 /**
+ * Цвета ячеек под тему.
+ *
+ * Акцент и цифра — противоположной светлоты: цифра рисуется поверх
+ * заливки ячейки, и при одинаковой светлоте её не прочитать. Остальное
+ * взято из палитры сайта: пустая ячейка чуть темнее фона, курсор —
+ * цвет основного текста.
+ *
+ * До гидрарации тема неизвестна — рисуем тёмную, она и так первая.
+ */
+const DARK_PALETTE: CodeSlotsPalette = {
+  accentColor: "#0ea5e9",
+  inkColor: "#e4e4e7",
+  slotColor: "#1c1c21",
+  digitColor: "#082f49",
+  dangerColor: "#ef4444",
+}
+
+const LIGHT_PALETTE: CodeSlotsPalette = {
+  accentColor: "#0284c7",
+  inkColor: "#18181b",
+  slotColor: "#e4e4e7",
+  digitColor: "#f0f9ff",
+  dangerColor: "#dc2626",
+}
+
+/**
  * ДЕМО 2: «Двухфакторная аутентификация».
  *
  * Поле ввода 6-значного кода с имитацией проверки. Ожидаемый код
  * генерируется локально, «серверная» проверка имитируется сравнением
- * строк с задержкой в несколько сотен миллисекунд.
- * Поддерживаются стрелки, Backspace/Delete, вставка из буфера и Enter.
+ * строк.
+ *
+ * Поле ввода — Code Slots из React Bits: одно невидимое поле держит
+ * фокус, а шесть ячеек лишь показывают результат. Раньше здесь стояли
+ * шесть отдельных полей ввода, и из-за этого вставка кода целиком из
+ * буфера и подстановка кода из СМС раскладывались только по одной
+ * цифре. Сейчас работают и то, и другое, плюс Backspace, Delete,
+ * стрелки, Home/End и клик по любой ячейке.
  */
 export function PinInputDemo() {
   const hydrated = useHydrated()
+  const { resolvedTheme } = useTheme()
+
   // Версия кода: увеличивается по кнопке «Обновить код» и пересчитывает его.
   const [version, setVersion] = React.useState(0)
   // На сервере код неизвестен, поэтому рендерим заглушку и получаем
@@ -43,101 +76,39 @@ export function PinInputDemo() {
     void version
     return hydrated ? randomCode() : null
   }, [hydrated, version])
-  const [digits, setDigits] = React.useState<string[]>(() =>
-    Array.from({ length: LENGTH }, () => "")
-  )
+
+  const [code, setCode] = React.useState("")
   const [status, setStatus] = React.useState<"idle" | "success" | "error">(
     "idle"
   )
-  const refs = React.useRef<Array<HTMLInputElement | null>>([])
 
-  const value = digits.join("")
-  const filled = digits.filter(Boolean).length
+  const filled = code.replace(/\D/g, "").length
+  const palette = resolvedTheme === "light" ? LIGHT_PALETTE : DARK_PALETTE
 
   const reset = React.useCallback(() => {
-    setDigits(Array.from({ length: LENGTH }, () => ""))
+    setCode("")
     setStatus("idle")
   }, [])
 
-  const setDigit = (index: number, raw: string) => {
-    const cleaned = raw.replace(/\D/g, "").slice(-1)
-    setStatus("idle")
-    setDigits((prev) => {
-      const next = [...prev]
-      if (cleaned) {
-        next[index] = cleaned
-      } else {
-        next[index] = ""
+  const verify = React.useCallback(
+    (value: string) => {
+      if (secret && value === secret) {
+        setStatus("success")
+        toast.success("Вход разрешён", {
+          description: "Второй фактор подтверждён. Сессия помечена как доверенная.",
+        })
+        return
       }
-      return next
-    })
-    if (cleaned && index < LENGTH - 1) {
-      refs.current[index + 1]?.focus()
-    }
-  }
-
-  const onKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace") {
-      e.preventDefault()
-      if (digits[index]) {
-        setDigit(index, "")
-      } else if (index > 0) {
-        refs.current[index - 1]?.focus()
-        setDigit(index - 1, "")
-      }
-      return
-    }
-    if (e.key === "Delete") {
-      e.preventDefault()
-      setDigit(index, "")
-      return
-    }
-    if (e.key === "ArrowLeft" && index > 0) {
-      refs.current[index - 1]?.focus()
-    }
-    if (e.key === "ArrowRight" && index < LENGTH - 1) {
-      refs.current[index + 1]?.focus()
-    }
-    if (e.key === "Enter") {
-      verify()
-    }
-  }
-
-  const onPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    const text = e.clipboardData.getData("text").replace(/\D/g, "")
-    if (!text) return
-    e.preventDefault()
-    const next = Array.from({ length: LENGTH }, (_, i) => text[i] ?? "")
-    setStatus("idle")
-    setDigits(next)
-    const last = Math.min(text.length, LENGTH) - 1
-    refs.current[Math.max(last, 0)]?.focus()
-  }
-
-  const verify = React.useCallback(() => {
-    if (filled !== LENGTH) {
-      setStatus("idle")
-      toast.warning("Введите все шесть цифр", {
-        description: `Заполнено ${filled} из ${LENGTH}.`,
+      setStatus("error")
+      toast.error("Неверный код", {
+        description: "Код не совпал с тем, что показал аутентификатор.",
       })
-      return
-    }
-    if (secret && value === secret) {
-      setStatus("success")
-      toast.success("Вход разрешён", {
-        description:
-          "Второй фактор подтверждён. Сессия помечена как доверенная.",
-      })
-      return
-    }
-    setStatus("error")
-    toast.error("Неверный код", {
-      description: "Код не совпал с тем, что показал аутентификатор.",
-    })
-  }, [filled, secret, value])
+    },
+    [secret]
+  )
 
   return (
-    <Card className="flex flex-col gap-0">
+    <Card className="[--card-spacing:--spacing(6)]">
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
           <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
@@ -156,18 +127,18 @@ export function PinInputDemo() {
         </p>
       </CardHeader>
 
-      <CardContent className="flex flex-col gap-3">
-        <div className="flex flex-col items-center gap-1 rounded-xl border bg-muted/40 p-3">
+      <CardContent className="flex flex-col gap-5">
+        <div className="flex flex-col items-center gap-2 rounded-xl border bg-muted/40 p-5">
           <span className="text-[0.7rem] uppercase text-muted-foreground">
             Ожидаемый код
           </span>
           <code
-            className={cn(
-              "font-mono text-2xl font-semibold tracking-[0.4em]",
-              secret ? "" : "opacity-40",
-              status === "success" && "text-emerald-500",
-              status === "error" && "text-destructive"
-            )}
+            className={
+              "font-mono text-2xl font-semibold tracking-[0.4em] " +
+              (secret ? "" : "opacity-40 ") +
+              (status === "success" ? "text-emerald-500 " : "") +
+              (status === "error" ? "text-destructive" : "")
+            }
             aria-live="polite"
           >
             {secret ? `${secret.slice(0, 3)} ${secret.slice(3)}` : "••• •••"}
@@ -190,49 +161,32 @@ export function PinInputDemo() {
           </Button>
         </div>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            verify()
-          }}
-          className="flex flex-col gap-2"
-        >
-          <fieldset className="flex flex-col gap-1.5">
-            <legend className="text-xs font-medium">
-              Введите 6-значный код
-            </legend>
-            <div className="flex justify-center gap-2">
-              {digits.map((digit, index) => (
-                <input
-                  key={index}
-                  ref={(el) => {
-                    refs.current[index] = el
-                  }}
-                  value={digit}
-                  inputMode="numeric"
-                  autoComplete={index === 0 ? "one-time-code" : "off"}
-                  pattern="\d"
-                  maxLength={1}
-                  aria-label={`Цифра ${index + 1} из ${LENGTH}`}
-                  onChange={(e) => setDigit(index, e.target.value)}
-                  onKeyDown={(e) => onKeyDown(index, e)}
-                  onPaste={onPaste}
-                  onFocus={(e) => e.currentTarget.select()}
-                  className={cn(
-                    "size-10 rounded-lg border border-input bg-transparent text-center font-mono text-lg font-semibold transition-all outline-none",
-                    "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
-                    digit && "border-primary bg-primary/5 text-foreground",
-                    status === "success" && "border-emerald-500",
-                    status === "error" && "border-destructive"
-                  )}
-                />
-              ))}
-            </div>
-          </fieldset>
+        <div className="flex flex-col items-center gap-2">
+          {/* Подпись и поле больше не склеены: раньше legend внутри
+              fieldset не участвовал в раскладке flex-контейнера и
+              отступ до поля схлопывался в ноль. */}
+          <p className="mb-1 text-xs font-medium">Введите 6-значный код</p>
 
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <Button type="submit" size="sm" disabled={filled !== LENGTH}>
-              <CornerDownLeftIcon data-icon="inline-start" />
+          <CodeSlots
+            length={LENGTH}
+            value={code}
+            onChange={(next) => {
+              setCode(next)
+              if (status !== "idle") setStatus("idle")
+            }}
+            onComplete={verify}
+            status={status}
+            palette={palette}
+            ariaLabel="Введите 6-значный код"
+          />
+
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Button
+              type="button"
+              size="sm"
+              disabled={filled !== LENGTH || status === "success"}
+              onClick={() => verify(code)}
+            >
               Подтвердить
             </Button>
             <Button
@@ -242,7 +196,6 @@ export function PinInputDemo() {
               onClick={reset}
               disabled={filled === 0}
             >
-              <DeleteIcon data-icon="inline-start" />
               Очистить
             </Button>
             <Button
@@ -275,7 +228,7 @@ export function PinInputDemo() {
                 ? "Код отклонён: попытки считаются в журнал безопасности."
                 : `Введено ${filled} из ${LENGTH}`}
           </p>
-        </form>
+        </div>
       </CardContent>
     </Card>
   )

@@ -4,15 +4,21 @@ import { PinInputDemo } from "@/components/pin-input-demo"
 import { Card, CardContent } from "@/components/ui/card"
 import { ServerCrashIcon, TerminalIcon } from "lucide-react"
 
+/*
+ * Комментарии вынесены на свои строки. Пока они стояли в конце строк кода,
+ * самая длинная строка не помещалась в карточку, и блок уезжал под обрез —
+ * читалось, что пример недописан.
+ */
 const snippet = `// Сервер проверяет код из приложения
 const ok = await totp.verify({
-  token: code,           // 6 цифр из телефона
+  token: code,   // 6 цифр из телефона
   secret: user.totpSecret,
-  window: 1,             // допуск ±30 секунд
+  window: 1,     // допуск ±30 секунд
 })
 
 if (!ok) {
-  await rateLimit("2fa:" + user.id)   // защита от перебора
+  // защита от перебора
+  await rateLimit("2fa:" + user.id)
   throw new UnauthorizedError()
 }` as const
 
@@ -30,30 +36,39 @@ if (!ok) {
  * а лишнее по высоте обрезается сверху и снизу. Поэтому на широком экране
  * блоки стоят в три колонки — в две они бы не поместились: справа от кода
  * ещё шёл серверный сниппет, и колонка была вдвое выше соседних.
+ *
+ * Отступы здесь щедрее, чем в остальных разделах: блоки живут в одной
+ * сетке три в ряд, и на общих отступах поля, кнопки и подписи слипались
+ * в один плотный список. Запас по высоте у раздела есть — карточки
+ * занимают меньше половины экрана.
  */
 export function SecurityDemos() {
   return (
-    <Section id="demos" label="Демо">
+    <Section
+      id="demos"
+      label="Демо"
+      contentClassName="px-6 py-14 sm:px-10"
+    >
       <SectionHeader
         eyebrow="07 — Демо"
         title="Попробуйте руками"
         description="Два примера прямо в браузере: проверка стойкости пароля и вход по шестизначному коду. Ничего никуда не отправляется."
       />
 
-      <div className="mt-6 grid items-start gap-4 sm:mt-8 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-10 grid items-start gap-6 sm:mt-12 lg:grid-cols-2 xl:grid-cols-3">
         <AccountSecurity />
         <PinInputDemo />
 
-        <Card className="lg:col-span-2 xl:col-span-1">
-          <CardContent className="flex flex-col gap-2">
+        <Card className="gap-5 [--card-spacing:--spacing(6)] lg:col-span-2 xl:col-span-1">
+          <CardContent className="flex flex-col gap-4">
             <span className="flex items-center gap-2 text-sm font-medium">
               <TerminalIcon className="size-4 text-primary" />
               Что делает сервер
             </span>
-            <pre className="overflow-x-auto rounded-lg bg-muted/60 p-3 font-mono text-[0.65rem] leading-relaxed">
+            <pre className="overflow-x-auto rounded-lg bg-muted/60 p-5 font-mono text-[0.7rem] leading-relaxed">
               <code>{snippet}</code>
             </pre>
-            <p className="flex items-start gap-2 text-xs text-pretty text-muted-foreground">
+            <p className="flex items-start gap-2.5 text-xs text-pretty text-muted-foreground">
               <ServerCrashIcon className="mt-0.5 size-3.5 shrink-0" />
               Секрет хранится только на сервере: утечка базы паролей не даёт
               войти, а перебор шестизначного кода упирается в счётчик попыток.

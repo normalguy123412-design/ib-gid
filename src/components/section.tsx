@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge"
+import { DecryptedText } from "@/components/decrypted-text"
 import { Parallax } from "@/components/parallax"
 import { Reveal } from "@/components/reveal"
 import { cn } from "cn"
@@ -22,6 +23,7 @@ export function Section({
   label,
   screens = 1,
   className,
+  contentClassName,
   children,
 }: {
   id?: string
@@ -45,7 +47,13 @@ export function Section({
    */
   screens?: number
   className?: string
-  children: React.ReactNode
+  /**
+   * Отступы вокруг содержимого — для разделов, которым нужно больше
+   * воздуха, чем у остальных. Общие отступы заданы ниже и не меняются:
+   * иначе каждый раздел сдвигал бы всю ленту.
+   */
+  contentClassName?: string
+  children?: React.ReactNode
 }) {
   return (
     <section
@@ -59,9 +67,16 @@ export function Section({
           aria-hidden
           className="pointer-events-none absolute inset-0 flex select-none items-center justify-center overflow-hidden"
         >
-          <span className="font-heading text-[16vw] leading-none font-bold tracking-tight text-foreground/[0.055]">
-            {label}
-          </span>
+          {/*
+            Подпись раскрывается из случайных символов, когда панель
+            доезжает до экрана. Работает при полупрозрачности 5,5%, потому
+            что меняет сами символы, а не затирает заливку — в отличие от
+            TechText, которому для эффекта нужен непрозрачный цвет.
+          */}
+          <DecryptedText
+            text={label}
+            className="font-heading text-[16vw] leading-none font-bold tracking-tight text-foreground/[0.055]"
+          />
         </span>
       ) : null}
 
@@ -76,7 +91,12 @@ export function Section({
         className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-background to-transparent"
       />
 
-      <div className="relative h-full w-full px-4 py-10 sm:px-6">
+      <div
+        className={cn(
+          "relative h-full w-full px-4 py-10 sm:px-6",
+          contentClassName
+        )}
+      >
         {/* В одну колонку содержимое центрируется по вертикали. В несколько —
             панель занимает всю ширину, а колонки внутри неё раскрывает
             сам раздел: так каждая следующая группа выходит справа. */}

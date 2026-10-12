@@ -5,7 +5,6 @@ import {
   InfoIcon,
   KeyRoundIcon,
   ListChecksIcon,
-  ShieldCheckIcon,
 } from "lucide-react"
 import { Section } from "@/components/section"
 import { Parallax } from "@/components/parallax"
@@ -71,10 +70,13 @@ export function Checklist() {
             </Link>
           </Button>
 
-          <p className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-            <ShieldCheckIcon className="size-3.5" />
-            Занимает 15–20 минут · бесплатно
-          </p>
+          {/*
+            Подпись «Занимает 15–20 минут · бесплатно» убрана. Обещание
+            наподобие ничего не сообщает о самом действии и в школьном
+            проекте выглядит как реклама. Время и так уже названо выше
+            фразой «занимают вечер» — без конкретных минут, которые всё
+            равно нельзя проверить.
+          */}
         </Parallax>
 
         {/* Шаги и пояснение. */}

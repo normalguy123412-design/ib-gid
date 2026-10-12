@@ -11,7 +11,13 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        // Стеклянный блок: заливка полупрозрачная, а размытие берёт то,
+        // что оказалось под карточкой. За карточками видна крупная
+        // подпись раздела, и блоки перестают быть непрозрачными пятнами.
+        // Размытие даётся только карточкам: вложенные подблоки внутри
+        // них оставлены плотными — иначе текст внутри теряет контраст,
+        // а вложенный backdrop-filter стоит дороже всего остального.
+        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card/55 py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 backdrop-blur-sm [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
         className
       )}
       {...props}

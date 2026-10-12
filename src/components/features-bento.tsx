@@ -52,7 +52,7 @@ export function FeaturesBento() {
           {threats.map((threat) => (
             <Card
               key={threat.title}
-              className="flex flex-col gap-2 border-border/70 bg-card/50 py-3 transition-colors hover:border-primary/40"
+              className="flex flex-col gap-2 border-border/70 py-3 transition-colors hover:border-primary/40"
             >
               <CardHeader className="px-3">
                 <span className="grid size-9 place-items-center rounded-lg bg-primary/10 text-primary">

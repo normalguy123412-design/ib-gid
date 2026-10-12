@@ -23,6 +23,13 @@ import { useHorizontalScroll } from "@/components/horizontal-scroll"
  * при неподвижной прокрутке по горизонтали, поэтому вертикальный
  * scrollYProgress у панелей всегда ноль и параллакс просто не работает.
  * Глубину там создаёт появление блоков (см. Reveal).
+ *
+ * Сам подсчёт прогресса вынесен в отдельный компонент. Раньше useScroll
+ * вызывался здесь же, а ref подставлялся в motion.div только когда
+ * параллакс вообще нужен. В горизонтальном режиме ref оставался
+ * неприкреплённым, и motion бросал «Target ref is defined but not
+ * hydrated» прямо во время гидратации — замер ширины ленты срывался, и
+ * первые пару сотен миллисекунд страница вообще не прокручивалась.
  */
 export function Parallax({
   children,
@@ -34,9 +41,31 @@ export function Parallax({
   speed?: number
   className?: string
 }) {
-  const ref = React.useRef<HTMLDivElement | null>(null)
   const reduceMotion = useReducedMotion()
   const horizontal = useHorizontalScroll()
+
+  if (horizontal || reduceMotion || speed === 0) {
+    return <div className={className}>{children}</div>
+  }
+
+  return (
+    <Offset speed={speed} className={className}>
+      {children}
+    </Offset>
+  )
+}
+
+/** Смещение по вертикали. Компонент существует только ради общего ref. */
+function Offset({
+  children,
+  speed,
+  className,
+}: {
+  children: React.ReactNode
+  speed: number
+  className?: string
+}) {
+  const ref = React.useRef<HTMLDivElement | null>(null)
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -52,10 +81,6 @@ export function Parallax({
 
   // Диапазон смещения: speed * 120px в обе стороны от нейтрали.
   const y = useTransform(smooth, [0, 1], [speed * 120, speed * -120])
-
-  if (horizontal || reduceMotion || speed === 0) {
-    return <div className={className}>{children}</div>
-  }
 
   return (
     <motion.div ref={ref} className={className} style={{ y }}>

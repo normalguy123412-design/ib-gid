@@ -85,7 +85,7 @@ export function HowItWorks() {
           {STEPS.map((step) => (
             <li
               key={step.n}
-              className="flex flex-col gap-2 rounded-2xl border border-border/70 bg-card/50 p-4 transition-colors hover:border-primary/40"
+              className="flex flex-col gap-2 rounded-2xl border border-border/70 p-4 transition-colors hover:border-primary/40"
             >
               <div className="flex items-center justify-between">
                 <span className="grid size-9 place-items-center rounded-lg bg-muted font-mono text-xs font-semibold text-muted-foreground">

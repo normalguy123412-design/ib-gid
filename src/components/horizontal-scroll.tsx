@@ -176,9 +176,28 @@ export function HorizontalScroll({
   const scrollToSection = React.useCallback(
     (id: string, smooth = true) => {
       const target = document.getElementById(id)
-      if (!target || maxX === 0) return
+      if (!target) return
 
-      const top = Math.min(target.offsetLeft, maxX)
+      /*
+       * Длина пути берётся здесь, а не из состояния. Пока лента не
+       * измерена (первые кадры после загрузки, мигнувший ресайз), в
+       * состоянии maxX = 0, и переход раньше просто молча возвращался —
+       * браузер доезжал до якоря сам и открывал совсем другой раздел.
+       */
+      const track = trackRef.current
+      const limit = track
+        ? Math.max(0, track.scrollWidth - document.documentElement.clientWidth)
+        : maxX
+      if (limit === 0) return
+
+      // Положение раздела внутри ленты. Разность прямоугольников не
+      // зависит ни от сдвига ленты, ни от того, кто сейчас у панели
+      // offsetParent: оба прямоугольника едут вместе с треком.
+      const offset = track
+        ? target.getBoundingClientRect().left - track.getBoundingClientRect().left
+        : target.offsetLeft
+
+      const top = Math.min(offset, limit)
 
       if (smooth) {
         window.scrollTo({ top, behavior: "smooth" })
@@ -234,6 +253,28 @@ export function HorizontalScroll({
     jumpedToHash.current = true
     scrollToSection(id, false)
   }, [maxX, scrollToSection])
+
+  /*
+   * Переход по смене адреса — из закладок, из истории, по ссылке вида
+   * site/#threats на уже открытой странице. Здесь меняется только якорь,
+   * сам документ не перезагружается, и прежний одноразовый эффект выше
+   * уже ничего не делал: страница оставалась на прежней панели, а
+   * браузер пытался доехать до якоря сам — по трансформированной ленте
+   * это выходило на произвольный раздел.
+   *
+   * replaceState из scrollToSection событие не порождает, поэтому наш же
+   * переход сюда не попадает и дважды не прокручивается.
+   */
+  React.useEffect(() => {
+    const onHashChange = () => {
+      const id = window.location.hash.slice(1)
+      if (!id) return
+      scrollToSection(id, true)
+    }
+
+    window.addEventListener("hashchange", onHashChange)
+    return () => window.removeEventListener("hashchange", onHashChange)
+  }, [scrollToSection])
 
   /**
    * Шаг по панелям клавишами-стрелками.

@@ -12,6 +12,7 @@ import { IfItHappens } from "@/components/if-it-happens"
 import { NumbersStrip } from "@/components/numbers-strip"
 import { SecurityDemos } from "@/components/security-demos"
 import { SiteFooter } from "@/components/site-footer"
+import { SiteBackground } from "@/components/site-background"
 import { StartHere } from "@/components/start-here"
 
 /**
@@ -27,14 +28,14 @@ import { StartHere } from "@/components/start-here"
 export default function Home() {
   return (
     <>
-      {/* Фон — сплошной чёрный. На нём каждая панель несёт свою крупную
-          полупрозрачную подпись (см. label в Section), которая проезжает
-          вместе с лентой. Отдельного слоя с анимацией не требуется. */}
-
-      {/* Лента разделов: прокрутка вниз двигает её вправо. Док передаётся
-          внутрь — иначе он не видит прогресс прокрутки и считает активный
-          раздел по вертикали, где у всех панелей одинаковый верх. */}
-      <HorizontalScroll overlay={<DockNav />}>
+      {/* Лента разделов: прокрутка вниз двигает её вправо.
+          Док передаётся внутрь — иначе он не видит прогресс прокрутки и
+          считает активный раздел по вертикали, где у всех панелей
+          одинаковый верх. */}
+      {/* Фон — один на всю ленту, а не по одному на раздел: тринадцать
+          холстов во весь экран съели бы около восьмидесяти мегабайт
+          видеопамяти. Липкий слой перекрывает все панели сразу. */}
+      <HorizontalScroll background={<SiteBackground />} overlay={<DockNav />}>
         {/* main остаётся landmark'ом и растягивается вдоль всей ленты,
             чтобы разделы были его прямыми флекс-потомками. */}
         <main className="relative z-10 flex h-full w-max">

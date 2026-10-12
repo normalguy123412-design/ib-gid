@@ -55,7 +55,7 @@ export function DefenseMethods() {
             {defenseCategories.map((category, index) => (
               <Card
                 key={category.title}
-                className="flex flex-col gap-2 border-border/70 bg-card/50 py-3 transition-colors hover:border-primary/40"
+                className="flex flex-col gap-2 border-border/70 py-3 transition-colors hover:border-primary/40"
               >
                 <CardHeader className="px-3">
                   <div className="flex items-center justify-between">
@@ -100,7 +100,7 @@ export function DefenseMethods() {
             {defenseMechanisms.map((mechanism) => (
               <Card
                 key={mechanism.title}
-                className="flex flex-col border-border/70 bg-card/50 py-3"
+                className="flex flex-col border-border/70 py-3"
               >
                 <CardHeader className="px-3">
                   <span className="grid size-9 place-items-center rounded-lg bg-muted text-foreground">

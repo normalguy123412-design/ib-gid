@@ -1,14 +1,10 @@
-import Link from "next/link"
-import {
-  ArrowRightIcon,
-  ChevronDownIcon,
-  ShieldCheckIcon,
-  SparklesIcon,
-} from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { ArrowRightIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Counter } from "@/components/counter"
+import { DecryptedText } from "@/components/decrypted-text"
 import { Enter } from "@/components/reveal"
-import { heroStats } from "@/lib/content"
+import { HeroTitle } from "@/components/hero-title"
+import { heroStats, projectGoal, relevance } from "@/lib/content"
 
 /**
  * HERO-секция: первый экран сайта — первая панель горизонтальной ленты.
@@ -24,74 +20,97 @@ export function AuroraHero() {
       data-panel=""
       className="relative isolate h-full w-screen shrink-0 overflow-hidden pt-14 pb-20 sm:pt-16 sm:pb-24"
     >
-      {/* Затемнение для читаемости текста. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-background/80 via-background/25 to-transparent"
-      />
+      {/* Затемнение фона теперь общее для всего сайта — см. SiteBackground. */}
 
-      {/* Крупная подпись фона: едет вместе с панелью. */}
+      {/* Крупная подпись фона: едет вместе с панелью и раскрывается
+          из случайных символов при первом появлении на экране. */}
       <span
         aria-hidden
         className="pointer-events-none absolute inset-0 flex select-none items-center justify-center overflow-hidden"
       >
-        <span className="font-heading text-[16vw] leading-none font-bold tracking-tight text-foreground/[0.055]">
-          ИБ-Гид
-        </span>
+        <DecryptedText
+          text="ИБ-Гид"
+          className="font-heading text-[16vw] leading-none font-bold tracking-tight text-foreground/[0.055]"
+        />
       </span>
 
-      <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col items-center justify-center px-4 text-center sm:px-6">
+      <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col items-center justify-center px-4 text-center sm:px-6">
         {/* Каскад появления: каждый следующий блок стартует с задержкой. */}
-        <Enter index={0}>
-              <Badge variant="secondary" className="anim-bob gap-1.5">
-            <SparklesIcon className="size-3" />
-            Простым языком · без технического образования
-          </Badge>
+        {/* Надпись на canvas и её запасной текстовый вариант — см. HeroTitle. */}
+        <Enter index={0} className="w-full">
+          <HeroTitle />
         </Enter>
 
         <Enter index={1} className="mt-6 w-full">
-          <h1 className="font-heading text-4xl font-semibold tracking-tight text-balance sm:text-6xl">
-            Информационная безопасность
-          </h1>
-        </Enter>
+          {/*
+            Два вводных блока стоят рядом: цель слева, актуальность
+            справа. Раньше они шли друг под другом, и нижний выглядел
+            продолжением верхнего — хотя отвечают они на разные вопросы
+            (зачем работа и почему тема не устарела). Сетка из двух
+            колонок ставит их на один уровень, а на узких экранах
+            сворачивается в столбик.
 
-        <Enter index={2} className="mt-6 w-full">
-          {/* Акцентная строка — как на референсном сайте. */}
-          <p className="mx-auto mb-4 font-heading text-lg font-medium tracking-tight text-foreground/90 sm:text-xl">
-            Три шага, которые закроют почти все риски
-          </p>
-          <p className="mx-auto max-w-2xl text-base text-pretty text-muted-foreground sm:text-lg">
-            Что такое информационная безопасность, от кого надо защищаться и
-            что сделать прямо сейчас — без сложных терминов и технического
-            образования.
-          </p>
+            Контейнер первого экрана расширен с max-w-4xl до max-w-5xl:
+            в двух колонках текст актуальности иначе ложился бы в девять
+            строк, и блок становился вдвое выше цели.
+          */}
+          <div className="mx-auto grid w-full max-w-5xl gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-2 rounded-xl border bg-card/55 px-5 py-4 text-left backdrop-blur-sm">
+              <span className="font-mono text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                {projectGoal.label}
+              </span>
+              <p className="font-heading text-lg font-medium tracking-tight text-balance sm:text-xl">
+                {projectGoal.text}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2 rounded-xl border bg-card/55 px-5 py-4 text-left backdrop-blur-sm">
+              <span className="font-mono text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                {relevance.label}
+              </span>
+              <p className="font-heading text-base font-medium tracking-tight text-balance sm:text-lg">
+                {relevance.text}
+              </p>
+            </div>
+          </div>
         </Enter>
 
         <Enter index={3} className="mt-8 flex w-full flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          {/* Основной CTA ведёт к блоку «С чего начать». */}
+          {/*
+            Ссылки внутри — обычные якоря, а не next/link. Разделы стоят
+            в горизонтальной ленте, и переход к ним делает обработчик
+            на самой ленте (см. HorizontalScroll.handleClick): он считает
+            положение панели и переводит его в вертикальную прокрутку.
+            next/link поверх этого запускал собственную навигацию и
+            доводил страницу до якоря штатным scrollIntoView, который про
+            трансформированный трек считает позицию неверно — и открывал
+            соседний раздел вместо нужного.
+          */}
           <Button asChild size="lg" className="group w-full sm:w-auto">
-            <Link href="#start">
+            <a href="#start">
               Начать изучение
               <ArrowRightIcon
                 data-icon="inline-end"
                 className="transition-transform group-hover:translate-x-0.5"
               />
-            </Link>
+            </a>
           </Button>
           <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
-            <Link href="#glossary">Словарик терминов</Link>
+            <a href="#glossary">Словарик терминов</a>
           </Button>
         </Enter>
 
-        <Enter index={4} className="mt-14 w-full">
+        <Enter index={4} className="mt-10 w-full">
           <dl className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
             {heroStats.map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-xl border bg-card/60 px-4 py-5 backdrop-blur-sm"
+                className="rounded-xl border bg-card/55 px-4 py-5 backdrop-blur-sm"
               >
+                {/* Цифры доезжают до значения тем же счётчиком, что и в
+                    разделе «В цифрах», — одна реализация на весь сайт. */}
                 <dt className="font-heading text-3xl font-semibold">
-                  {stat.value}
+                  <Counter value={stat.value} className="tabular-nums" />
                 </dt>
                 <dd className="mt-1 text-xs text-muted-foreground">
                   {stat.label}
@@ -100,29 +119,22 @@ export function AuroraHero() {
             ))}
           </dl>
 
-          {/* Мета-строка и подсказка «листайте ниже». */}
-          <p className="mt-6 flex items-center justify-center gap-2 font-mono text-xs text-muted-foreground">
-            <ShieldCheckIcon className="size-3.5" />
-            Читается за 10 минут · без регистрации
-          </p>
+          {/*
+            Мета-строка «Читается за 10 минут · без регистрации» убрана.
+            Обещание наподобие — из разряда рекламных: ни времени чтения,
+            ни регистрации на сайте нет, и проверяющему они не подтверждают
+            ничего. Цифры в статистике выше остались: они считаются из
+            содержимого сайта и потому правдивы.
+          */}
         </Enter>
       </div>
 
-      {/* Якорь «листайте ниже» с анимацией. */}
-        {/* Подсказка «листайте ниже». Отступ снизу задан с запасом на нижнюю
-            полосу прогресса, иначе значок наполовину уходил под неё. */}
-        <a
-          href="#start"
-          aria-label="Листать ниже"
-          className="group absolute inset-x-0 bottom-20 z-10 mx-auto flex w-fit flex-col items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
-        >
-        <span className="font-mono text-[0.65rem] uppercase tracking-widest">
-          вниз
-        </span>
-        <span className="grid size-8 place-items-center rounded-full border transition-colors group-hover:border-primary">
-          <ChevronDownIcon className="size-4 animate-bounce" />
-        </span>
-      </a>
+      {/*
+        Якорь «вниз» со стрелочкой убран: он предлагал листать вниз, хотя
+        сайт листается вправо, — подсказка сбивала с толку. Нижний отступ
+        секции остался: под первым экраном проезжает док с полосой
+        прогресса, и без запаса он наполовину закрывал бы подпись.
+      */}
     </section>
   )
 }

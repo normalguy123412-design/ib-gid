@@ -1,25 +1,15 @@
 ﻿import type { LucideIcon } from "lucide-react"
 import {
   Binary,
-  BookOpen,
   Bug,
   Building2,
-  Database,
   FileKey,
-  FileText,
   Fingerprint,
-  HardDriveDownload,
-  KeyRound,
-  LifeBuoy,
   Lock,
   LockOpen,
   MailWarning,
-  Network,
   Radar,
-  Rocket,
-  Scale,
   ScrollText,
-  ServerCrash,
   Shield,
   ShieldCheck,
   Siren,
@@ -72,10 +62,22 @@ export const navItems: NavItem[] = [
 ]
 
 export const heroStats = [
-  { value: "3", label: "главных свойства защиты" },
-  { value: "5", label: "самых частых угроз" },
-  { value: "21", label: "термин в словарике" },
+  { value: 3, label: "главных свойства защиты" },
+  { value: 5, label: "самых частых угроз" },
+  { value: 21, label: "термин в словарике" },
 ]
+
+/**
+ * Цель проекта — формулировка из задания.
+ *
+ * Стоит на первом экране, а не в подвале: на защите это первое, на что
+ * смотрят, и спрятанная внизу страницы строка до проверяющего не доходит.
+ * Вынесена в данные, потому что это факт о проекте, а не оформление.
+ */
+export const projectGoal = {
+  label: "Цель проекта",
+  text: "Узнать, что такое информационная безопасность и как себя обезопасить",
+}
 
 /**
  * Блок «С чего начать» — для тех, кто раньше об этом не думал.
@@ -459,38 +461,101 @@ export const glossary: {
   },
 ]
 
-export const frameworks = [
+/**
+ * ДАТА ОБРАЩЕНИЯ К ИСТОЧНИКАМ.
+ *
+ * Проставляется вручную в одном месте: список источников без дат
+ * обращения не считается списком. Меняешь здесь — меняется весь подвал.
+ */
+export const accessedAt = "10.10.2026"
+
+export type Source = {
+  /** Название источника. */
+  title: string
+  /** Зачем он здесь — одна строка. */
+  note: string
+  /** Ссылка. У нормативных документов её нет. */
+  href?: string
+}
+
+/**
+ * ИСТОЧНИКИ.
+ *
+ * Раньше источники были разложены по трём местам: рамки, тезисы и
+ * моноширинный список без ссылок. Для школьной работы это читалось как
+ * «где-то тут что-то было», поэтому теперь это один пронумерованный
+ * список с датой обращения, а наверху первого экрана стоит «Актуальность»
+ * (см. relevance) — она и объясняет, зачем эти источники понадобились.
+ */
+export const sources: Source[] = [
   {
-    icon: BookOpen,
     title: "NIST Cybersecurity Framework",
+    note: "Общий ориентир: определить, защитить, обнаружить, отреагировать, восстановиться",
     href: "https://www.nist.gov/cyberframework",
-    text: "Ориентир: определить, защитить, обнаружить, отреагировать, восстановиться",
   },
   {
-    icon: Scale,
     title: "OWASP Top 10",
-    href: "https://owasp.org/www-project-top-ten/",
-    text: "Десять главных дыр в веб-сайтах — список для разработчиков",
+    note: "Десять главных уязвимостей веб-приложений",
+    href: "https://top10.owasp.org/",
   },
   {
-    icon: Rocket,
+    title: "OWASP Cheat Sheet Series",
+    note: "Короткие рекомендации по безопасной разработке",
+    href: "https://cheatsheetseries.owasp.org/",
+  },
+  {
     title: "MITRE ATT&CK",
+    note: "База знаний о приёмах реальных злоумышленников",
     href: "https://attack.mitre.org/",
-    text: "База знаний о приёмах реальных злоумышленников",
   },
   {
-    icon: LifeBuoy,
+    title: "MITRE ATT&CK Navigator",
+    note: "Визуализация приёмов атакующих",
+    href: "https://mitre-attack.github.io/attack-navigator/",
+  },
+  {
     title: "CISA Secure Our World",
+    note: "Советы по безопасности для обычных людей",
     href: "https://www.cisa.gov/secure-our-world",
-    text: "Простые советы по безопасности для обычных людей",
+  },
+  {
+    title: "CIS Controls",
+    note: "Меры защиты, расставленные по приоритету",
+    href: "https://www.cisecurity.org/cis-controls",
+  },
+  {
+    title: "Have I Been Pwned",
+    note: "Проверка, не были ли утеканы ваши данные",
+    href: "https://haveibeenpwned.com/",
   },
 ]
 
-export const extraResources = [
-  { icon: FileText, title: "ГОСТ Р 51275-2006", text: "Факторы, влияющие на защиту информации" },
-  { icon: Database, title: "152-ФЗ", text: "Закон о персональных данных в РФ" },
-  { icon: Network, title: "MITRE ATT&CK Navigator", text: "Визуализация приёмов злоумышленников" },
-  { icon: HardDriveDownload, title: "CIS Controls", text: "Список мер защиты по приоритету" },
-  { icon: ServerCrash, title: "OWASP Cheat Sheets", text: "Короткие рекомендации по безопасности" },
-  { icon: KeyRound, title: "Have I Been Pwned", text: "Проверка, не было ли утечки вашей почты" },
+/** Нормативные документы: у стандартов и законов нет даты обращения. */
+export const normativeSources: Source[] = [
+  {
+    title: "152-ФЗ «О персональных данных»",
+    note: "Закон, который объясняет, почему утечка не страшна только самому",
+    href: "http://www.consultant.ru/document/cons_doc_LAW_61801/",
+  },
+  {
+    title: "ГОСТ Р 51275-2006",
+    note: "Национальный стандарт по защите информации",
+  },
 ]
+
+/**
+ * АКТУАЛЬНОСТЬ — почему тема не устарела.
+ *
+ * Стоит первой строкой первого экрана: для школьной работы это часть
+ * обязательного описания проекта, и она должна читаться сразу, а не
+ * после прокрутки до подвала.
+ *
+ * Цифр здесь нет намеренно. Статистика по утечкам устаревает за
+ * месяцы, и на защите за неё спросят источник. Вместо цифр — то, что
+ * проверяющий может проверить сам (haveibeenpwned.com), и общий смысл:
+ * материал начинается не с терминов, а с пароля и второго фактора.
+ */
+export const relevance = {
+  label: "Актуальность",
+  text: "Утечки баз и фишинговые письма случаются постоянно, и чаще всего страдает личный аккаунт. Поэтому материал начинается не с терминов, а с пароля и двухфакторного входа. Свои утечки можно проверить на haveibeenpwned.com.",
+}
