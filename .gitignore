@@ -1,7 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+# Без ведущего слэша: правило с ним действует только в корне, и
+# node_modules внутри mail-service/ уехал бы в репозиторий целиком.
+node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -31,7 +33,11 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
+# Секреты — .env и его варианты. Шаблон .env.example перечисляет только
+# имена переменных и заглушки, секретов в нём нет, и без исключения
+# он молча не коммитился бы: шаблон нужен другим людям и при развёртывании.
 .env*
+!.env.example
 
 # vercel
 .vercel

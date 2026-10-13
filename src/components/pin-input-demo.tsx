@@ -12,9 +12,33 @@ import { useHydrated } from "@/hooks/use-hydrated"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { CodeSlots, type CodeSlotsPalette } from "@/components/code-slots"
+import { cn } from "cn"
 
 const LENGTH = 6
+
+/**
+ * Адрес почтовой функции.
+ *
+ * Сайт собирается статикой, поэтому адрес известен только на момент
+ * сборки и вшивается в код. Если переменной нет — блок отправки вообще
+ * не рисуется, и демонстрация остаётся ровно такой, какой была до
+ * появления сервера: пустой блок с кнопкой, которая никуда не ведёт,
+ * выглядел бы как поломка.
+ */
+const CODE_API = process.env.NEXT_PUBLIC_CODE_API ?? ""
+
+/** Что сказать при каждом отказе сервера. Тексты сервера намеренно обезличены. */
+const MAIL_ERRORS: Record<string, string> = {
+  "bad-email": "Похоже, в адресе опечатка.",
+  "too-many-from-you":
+    "С этого компьютера ушло слишком много запросов. Попробуйте через час.",
+  "too-many-to-email":
+    "На этот адрес уже уходило несколько писем. Попробуйте другой.",
+  "mail-failed": "Почтовый сервис не ответил. Попробуйте позже.",
+  forbidden: "Запрос отклонён: сайт не разрешён к отправке.",
+}
 
 function randomCode() {
   return Array.from({ length: LENGTH }, () =>
@@ -82,6 +106,13 @@ export function PinInputDemo() {
     "idle"
   )
 
+  /* Отправка кода по почте. */
+  const [email, setEmail] = React.useState("")
+  const [mail, setMail] = React.useState<
+    "idle" | "sending" | "sent" | "error"
+  >("idle")
+  const [mailNote, setMailNote] = React.useState("")
+
   const filled = code.replace(/\D/g, "").length
   const palette = resolvedTheme === "light" ? LIGHT_PALETTE : DARK_PALETTE
 
@@ -89,6 +120,46 @@ export function PinInputDemo() {
     setCode("")
     setStatus("idle")
   }, [])
+
+  const sendCode = React.useCallback(async () => {
+    if (!secret || mail === "sending") return
+
+    setMail("sending")
+    setMailNote("")
+
+    try {
+      const response = await fetch(`${CODE_API}/api/send-code`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), code: secret }),
+      })
+
+      const data = (await response.json().catch(() => ({}))) as {
+        ok?: boolean
+        reason?: string
+      }
+
+      if (response.ok && data.ok) {
+        setMail("sent")
+        setMailNote(`Письмо с кодом отправлено на ${email.trim()}.`)
+        toast.success("Код отправлен", {
+          description: "Проверьте почту — демонстрация отправки работает.",
+        })
+        return
+      }
+
+      setMail("error")
+      setMailNote(
+        MAIL_ERRORS[data.reason ?? ""] ??
+          "Не удалось отправить письмо. Попробуйте позже."
+      )
+    } catch {
+      /* Сеть недоступна или адрес функции неверный — на защите это
+         просто неработающая кнопка, а не падение страницы. */
+      setMail("error")
+      setMailNote("Почтовый сервис недоступен.")
+    }
+  }, [email, mail, secret])
 
   const verify = React.useCallback(
     (value: string) => {
@@ -228,6 +299,73 @@ export function PinInputDemo() {
                 ? "Код отклонён: попытки считаются в журнал безопасности."
                 : `Введено ${filled} из ${LENGTH}`}
           </p>
+
+          {/*
+            Отправка кода по почте.
+
+            Блок рисуется только если адрес функции задан при сборке. Без
+            него кнопка вела бы в никуда и выглядела бы как поломка —
+            демонстрация должна либо работать целиком, либо остаться
+            ровно такой, какой была до появления сервера.
+
+            Отправляется тот же код, что виден на экране. Это не
+            настоящая проверка, и письмо само об этом говорит: код на
+            виду, а значит подтверждение никого ни от чего не защищает.
+            Настоящая система его в тайне держит.
+          */}
+          {CODE_API && secret ? (
+            <div className="mt-3 w-full rounded-xl border bg-muted/40 p-3 text-left">
+              <p className="text-xs font-medium">Отправить этот код себе</p>
+              <p className="mt-0.5 text-[0.7rem] text-muted-foreground">
+                Тот же код уйдёт письмом на указанный адрес — так работает
+                подтверждение по почте.
+              </p>
+
+              <form
+                className="mt-2 flex flex-col gap-2 sm:flex-row"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  void sendCode()
+                }}
+              >
+                <Input
+                  type="email"
+                  required
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  aria-label="Адрес для отправки кода"
+                  value={email}
+                  disabled={mail === "sending"}
+                  onChange={(event) => {
+                    setEmail(event.target.value)
+                    if (mail !== "idle") setMail("idle")
+                  }}
+                  className="sm:flex-1"
+                />
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={mail === "sending" || !email.trim()}
+                >
+                  {mail === "sending" ? "Отправляем…" : "Отправить"}
+                </Button>
+              </form>
+
+              {mailNote ? (
+                <p
+                  role="status"
+                  className={cn(
+                    "mt-2 text-[0.7rem]",
+                    mail === "error"
+                      ? "text-destructive"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  {mailNote}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </CardContent>
     </Card>

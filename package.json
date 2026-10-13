@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "mail:check": "node mail-service/check-send.cjs",
+    "mail:check:net": "node mail-service/check-smtp.cjs",
+    "mail:serve": "node mail-service/index.js"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

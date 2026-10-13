@@ -1,0 +1,15 @@
+{
+  "name": "ib-gid-mail-service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Отправка письма с кодом подтверждения для демонстрации 2FA на сайте «ИБ-Гид».",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "send": "node check-send.cjs",
+    "check": "node check-smtp.cjs"
+  },
+  "dependencies": {
+    "nodemailer": "^6.9.16"
+  }
+}
