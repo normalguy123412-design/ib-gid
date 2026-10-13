@@ -1,6 +1,7 @@
 ﻿import { Section, SectionHeader } from "@/components/section"
 import { AccountSecurity } from "@/components/account-security"
 import { PinInputDemo } from "@/components/pin-input-demo"
+import { TwoFactorCodeProvider } from "@/components/two-factor-code"
 import { Card, CardContent } from "@/components/ui/card"
 import { ServerCrashIcon, TerminalIcon } from "lucide-react"
 
@@ -30,7 +31,9 @@ if (!ok) {
  * 2) «Двухфакторная аутентификация» — ввод 6-значного кода с имитацией
  *    серверной проверки;
  * 3) что именно делает сервер с этим кодом.
- * Вся логика выполняется локально в браузере, данные никуда не отправляются.
+ * Вся логика выполняется локально в браузере. Наружу уходит ровно одно:
+ * шестизначный код по нажатию «Отправить код» — на адрес, введённый
+ * в первой карточке. Пароль и введённый код никуда не уходят.
  *
  * Раздел рассчитан ровно на один экран: панель не прокручивается вниз,
  * а лишнее по высоте обрезается сверху и снизу. Поэтому на широком экране
@@ -52,30 +55,42 @@ export function SecurityDemos() {
       <SectionHeader
         eyebrow="07 — Демо"
         title="Попробуйте руками"
-        description="Два примера прямо в браузере: проверка стойкости пароля и вход по шестизначному коду. Ничего никуда не отправляется."
+        description="Два примера прямо в браузере: проверка стойкости пароля и вход по шестизначному коду. Код можно отправить себе письмом — уйдёт тот самый, что нарисован во втором блоке."
       />
 
-      <div className="mt-10 grid items-start gap-6 sm:mt-12 lg:grid-cols-2 xl:grid-cols-3">
-        <AccountSecurity />
-        <PinInputDemo />
+      {/*
+        Обёртка идёт вокруг всей сетки, а не вокруг двух карточек:
+        провайдер не рисует разметки, но если он окажется прямым
+        ребёнком grid, то станет одной ячейкой из трёх, и третья
+        карточка уедет на новую строку.
 
-        <Card className="gap-5 [--card-spacing:--spacing(6)] lg:col-span-2 xl:col-span-1">
-          <CardContent className="flex flex-col gap-4">
-            <span className="flex items-center gap-2 text-sm font-medium">
-              <TerminalIcon className="size-4 text-primary" />
-              Что делает сервер
-            </span>
-            <pre className="overflow-x-auto rounded-lg bg-muted/60 p-5 font-mono text-[0.7rem] leading-relaxed">
-              <code>{snippet}</code>
-            </pre>
-            <p className="flex items-start gap-2.5 text-xs text-pretty text-muted-foreground">
-              <ServerCrashIcon className="mt-0.5 size-3.5 shrink-0" />
-              Секрет хранится только на сервере: утечка базы паролей не даёт
-              войти, а перебор шестизначного кода упирается в счётчик попыток.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+        Код живёт в общем состоянии: карточка слева отправляет его
+        письмом, карточка справа — рисует и сверяет. Пока состояние
+        было локальным у второй карточки, связать их было нечем.
+      */}
+      <TwoFactorCodeProvider>
+        <div className="mt-10 grid items-start gap-6 sm:mt-12 lg:grid-cols-2 xl:grid-cols-3">
+          <AccountSecurity />
+          <PinInputDemo />
+
+          <Card className="gap-5 [--card-spacing:--spacing(6)] lg:col-span-2 xl:col-span-1">
+            <CardContent className="flex flex-col gap-4">
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <TerminalIcon className="size-4 text-primary" />
+                Что делает сервер
+              </span>
+              <pre className="overflow-x-auto rounded-lg bg-muted/60 p-5 font-mono text-[0.7rem] leading-relaxed">
+                <code>{snippet}</code>
+              </pre>
+              <p className="flex items-start gap-2.5 text-xs text-pretty text-muted-foreground">
+                <ServerCrashIcon className="mt-0.5 size-3.5 shrink-0" />
+                Секрет хранится только на сервере: утечка базы паролей не даёт
+                войти, а перебор шестизначного кода упирается в счётчик попыток.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </TwoFactorCodeProvider>
     </Section>
   )
 }

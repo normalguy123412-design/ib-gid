@@ -8,43 +8,14 @@ import {
   RefreshCwIcon,
   SmartphoneIcon,
 } from "lucide-react"
-import { useHydrated } from "@/hooks/use-hydrated"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { CodeSlots, type CodeSlotsPalette } from "@/components/code-slots"
-import { cn } from "cn"
-
-const LENGTH = 6
-
-/**
- * Адрес почтовой функции.
- *
- * Сайт собирается статикой, поэтому адрес известен только на момент
- * сборки и вшивается в код. Если переменной нет — блок отправки вообще
- * не рисуется, и демонстрация остаётся ровно такой, какой была до
- * появления сервера: пустой блок с кнопкой, которая никуда не ведёт,
- * выглядел бы как поломка.
- */
-const CODE_API = process.env.NEXT_PUBLIC_CODE_API ?? ""
-
-/** Что сказать при каждом отказе сервера. Тексты сервера намеренно обезличены. */
-const MAIL_ERRORS: Record<string, string> = {
-  "bad-email": "Похоже, в адресе опечатка.",
-  "too-many-from-you":
-    "С этого компьютера ушло слишком много запросов. Попробуйте через час.",
-  "too-many-to-email":
-    "На этот адрес уже уходило несколько писем. Попробуйте другой.",
-  "mail-failed": "Почтовый сервис не ответил. Попробуйте позже.",
-  forbidden: "Запрос отклонён: сайт не разрешён к отправке.",
-}
-
-function randomCode() {
-  return Array.from({ length: LENGTH }, () =>
-    Math.floor(Math.random() * 10)
-  ).join("")
-}
+import {
+  CODE_LENGTH,
+  useTwoFactorCode,
+} from "@/components/two-factor-code"
 
 /**
  * Цвета ячеек под тему.
@@ -87,31 +58,14 @@ const LIGHT_PALETTE: CodeSlotsPalette = {
  * стрелки, Home/End и клик по любой ячейке.
  */
 export function PinInputDemo() {
-  const hydrated = useHydrated()
   const { resolvedTheme } = useTheme()
-
-  // Версия кода: увеличивается по кнопке «Обновить код» и пересчитывает его.
-  const [version, setVersion] = React.useState(0)
-  // На сервере код неизвестен, поэтому рендерим заглушку и получаем
-  // настоящее значение уже на клиенте — так SSR и гидрация совпадают.
-  // `version` — счётчик, который заставляет пересчитать код по кнопке
-  // «Обновить код»: он не читается в теле мемо, но служит его причиной.
-  const secret = React.useMemo(() => {
-    void version
-    return hydrated ? randomCode() : null
-  }, [hydrated, version])
+  // Код общий: письмо с ним уходит из соседней карточки.
+  const { secret, refresh } = useTwoFactorCode()
 
   const [code, setCode] = React.useState("")
   const [status, setStatus] = React.useState<"idle" | "success" | "error">(
     "idle"
   )
-
-  /* Отправка кода по почте. */
-  const [email, setEmail] = React.useState("")
-  const [mail, setMail] = React.useState<
-    "idle" | "sending" | "sent" | "error"
-  >("idle")
-  const [mailNote, setMailNote] = React.useState("")
 
   const filled = code.replace(/\D/g, "").length
   const palette = resolvedTheme === "light" ? LIGHT_PALETTE : DARK_PALETTE
@@ -120,46 +74,6 @@ export function PinInputDemo() {
     setCode("")
     setStatus("idle")
   }, [])
-
-  const sendCode = React.useCallback(async () => {
-    if (!secret || mail === "sending") return
-
-    setMail("sending")
-    setMailNote("")
-
-    try {
-      const response = await fetch(`${CODE_API}/api/send-code`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), code: secret }),
-      })
-
-      const data = (await response.json().catch(() => ({}))) as {
-        ok?: boolean
-        reason?: string
-      }
-
-      if (response.ok && data.ok) {
-        setMail("sent")
-        setMailNote(`Письмо с кодом отправлено на ${email.trim()}.`)
-        toast.success("Код отправлен", {
-          description: "Проверьте почту — демонстрация отправки работает.",
-        })
-        return
-      }
-
-      setMail("error")
-      setMailNote(
-        MAIL_ERRORS[data.reason ?? ""] ??
-          "Не удалось отправить письмо. Попробуйте позже."
-      )
-    } catch {
-      /* Сеть недоступна или адрес функции неверный — на защите это
-         просто неработающая кнопка, а не падение страницы. */
-      setMail("error")
-      setMailNote("Почтовый сервис недоступен.")
-    }
-  }, [email, mail, secret])
 
   const verify = React.useCallback(
     (value: string) => {
@@ -220,7 +134,7 @@ export function PinInputDemo() {
             size="xs"
             className="gap-1 font-mono"
             onClick={() => {
-              setVersion((v) => v + 1)
+              refresh()
               reset()
               toast.info("Код обновлён", {
                 description: "Новый код действует следующие 30 секунд.",
@@ -239,7 +153,7 @@ export function PinInputDemo() {
           <p className="mb-1 text-xs font-medium">Введите 6-значный код</p>
 
           <CodeSlots
-            length={LENGTH}
+            length={CODE_LENGTH}
             value={code}
             onChange={(next) => {
               setCode(next)
@@ -252,55 +166,17 @@ export function PinInputDemo() {
           />
 
           {/*
-            Отправка кода по почте стоит в одном ряду с остальными
-            действиями, а не отдельным блоком внизу.
+            Отправки кода здесь больше нет: адрес и кнопка «Отправить
+            код» переехали в соседнюю карточку, в строку «Email для
+            восстановления». Там человек вводит адрес, которым владеет,
+            и письмо приходит с тем самым кодом, что нарисован выше, —
+            ради этого и нужен общий код, а не локальный.
 
-            Раньше под полем для кода был отдельный огороженный блок «от
-            править этот код себе» со своим заголовком и пояснением, а под
-            ним — ещё и строка состояния. Получалось два «низа» подряд, и
-            взгляд упирался в пустое место вместо кнопок. Теперь всё
-            управление лежит в одной строке, а пояснение о том, что код
-            виден на экране, ушло в само письмо — там оно и уместнее.
-
-            Поле и кнопка рисуются только если адрес сервиса задан при
-            сборке: иначе кнопка вела бы в никуда и выглядела бы как
-            поломка, а демонстрация должна либо работать целиком, либо
-            остаться ровно такой, какой была до появления сервера.
+            Кнопка «Подтвердить» тоже убрана: проверка и так срабатывает
+            сама при вводе шестой цифры (onComplete у CodeSlots), и
+            кнопка была лишь вторым путём к тому же самому.
           */}
-          <form
-            className="flex flex-wrap items-center justify-center gap-2"
-            onSubmit={(event) => {
-              event.preventDefault()
-              void sendCode()
-            }}
-          >
-            {CODE_API && secret ? (
-              <>
-                <Input
-                  type="email"
-                  required
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  aria-label="Адрес для отправки кода"
-                  value={email}
-                  disabled={mail === "sending"}
-                  onChange={(event) => {
-                    setEmail(event.target.value)
-                    if (mail !== "idle") setMail("idle")
-                  }}
-                  className="h-9 w-full min-w-44 flex-1 sm:w-52"
-                />
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="h-9"
-                  disabled={mail === "sending" || !email.trim()}
-                >
-                  {mail === "sending" ? "Отправляем…" : "Отправить код"}
-                </Button>
-              </>
-            ) : null}
-
+          <div className="flex flex-wrap items-center justify-center gap-2">
             <Button
               type="button"
               size="sm"
@@ -331,26 +207,8 @@ export function PinInputDemo() {
               <CopyIcon data-icon="inline-start" />
               Скопировать
             </Button>
-          </form>
+          </div>
 
-          {mailNote ? (
-            <p
-              role="status"
-              className={cn(
-                "max-w-[32rem] text-center text-[0.7rem]",
-                mail === "error" ? "text-destructive" : "text-muted-foreground"
-              )}
-            >
-              {mailNote}
-            </p>
-          ) : null}
-
-          {/*
-            Кнопка «Подтвердить» убрана: проверка и так срабатывает сама
-            при вводе шестой цифры (onComplete у CodeSlots), и кнопка была
-            вторым путём к тому же самому. Строка состояния осталась — в
-            ней видно, что произошло.
-          */}
           <p
             className="text-center font-mono text-xs text-muted-foreground"
             aria-live="polite"
@@ -359,7 +217,7 @@ export function PinInputDemo() {
               ? "Совпадение подтверждено — фактор принят."
               : status === "error"
                 ? "Код отклонён: попытки считаются в журнал безопасности."
-                : `Введено ${filled} из ${LENGTH}`}
+                : `Введено ${filled} из ${CODE_LENGTH}`}
           </p>
         </div>
       </CardContent>
