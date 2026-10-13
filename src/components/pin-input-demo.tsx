@@ -251,28 +251,72 @@ export function PinInputDemo() {
             ariaLabel="Введите 6-значный код"
           />
 
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Button
-              type="button"
-              size="sm"
-              disabled={filled !== LENGTH || status === "success"}
-              onClick={() => verify(code)}
-            >
-              Подтвердить
-            </Button>
+          {/*
+            Отправка кода по почте стоит в одном ряду с остальными
+            действиями, а не отдельным блоком внизу.
+
+            Раньше под полем для кода был отдельный огороженный блок «от
+            править этот код себе» со своим заголовком и пояснением, а под
+            ним — ещё и строка состояния. Получалось два «низа» подряд, и
+            взгляд упирался в пустое место вместо кнопок. Теперь всё
+            управление лежит в одной строке, а пояснение о том, что код
+            виден на экране, ушло в само письмо — там оно и уместнее.
+
+            Поле и кнопка рисуются только если адрес сервиса задан при
+            сборке: иначе кнопка вела бы в никуда и выглядела бы как
+            поломка, а демонстрация должна либо работать целиком, либо
+            остаться ровно такой, какой была до появления сервера.
+          */}
+          <form
+            className="flex flex-wrap items-center justify-center gap-2"
+            onSubmit={(event) => {
+              event.preventDefault()
+              void sendCode()
+            }}
+          >
+            {CODE_API && secret ? (
+              <>
+                <Input
+                  type="email"
+                  required
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  aria-label="Адрес для отправки кода"
+                  value={email}
+                  disabled={mail === "sending"}
+                  onChange={(event) => {
+                    setEmail(event.target.value)
+                    if (mail !== "idle") setMail("idle")
+                  }}
+                  className="h-9 w-full min-w-44 flex-1 sm:w-52"
+                />
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="h-9"
+                  disabled={mail === "sending" || !email.trim()}
+                >
+                  {mail === "sending" ? "Отправляем…" : "Отправить код"}
+                </Button>
+              </>
+            ) : null}
+
             <Button
               type="button"
               size="sm"
               variant="outline"
+              className="h-9"
               onClick={reset}
               disabled={filled === 0}
             >
               Очистить
             </Button>
+
             <Button
               type="button"
               size="sm"
               variant="ghost"
+              className="h-9"
               disabled={!secret}
               onClick={async () => {
                 if (!secret) return
@@ -287,8 +331,26 @@ export function PinInputDemo() {
               <CopyIcon data-icon="inline-start" />
               Скопировать
             </Button>
-          </div>
+          </form>
 
+          {mailNote ? (
+            <p
+              role="status"
+              className={cn(
+                "max-w-[32rem] text-center text-[0.7rem]",
+                mail === "error" ? "text-destructive" : "text-muted-foreground"
+              )}
+            >
+              {mailNote}
+            </p>
+          ) : null}
+
+          {/*
+            Кнопка «Подтвердить» убрана: проверка и так срабатывает сама
+            при вводе шестой цифры (onComplete у CodeSlots), и кнопка была
+            вторым путём к тому же самому. Строка состояния осталась — в
+            ней видно, что произошло.
+          */}
           <p
             className="text-center font-mono text-xs text-muted-foreground"
             aria-live="polite"
@@ -299,73 +361,6 @@ export function PinInputDemo() {
                 ? "Код отклонён: попытки считаются в журнал безопасности."
                 : `Введено ${filled} из ${LENGTH}`}
           </p>
-
-          {/*
-            Отправка кода по почте.
-
-            Блок рисуется только если адрес функции задан при сборке. Без
-            него кнопка вела бы в никуда и выглядела бы как поломка —
-            демонстрация должна либо работать целиком, либо остаться
-            ровно такой, какой была до появления сервера.
-
-            Отправляется тот же код, что виден на экране. Это не
-            настоящая проверка, и письмо само об этом говорит: код на
-            виду, а значит подтверждение никого ни от чего не защищает.
-            Настоящая система его в тайне держит.
-          */}
-          {CODE_API && secret ? (
-            <div className="mt-3 w-full rounded-xl border bg-muted/40 p-3 text-left">
-              <p className="text-xs font-medium">Отправить этот код себе</p>
-              <p className="mt-0.5 text-[0.7rem] text-muted-foreground">
-                Тот же код уйдёт письмом на указанный адрес — так работает
-                подтверждение по почте.
-              </p>
-
-              <form
-                className="mt-2 flex flex-col gap-2 sm:flex-row"
-                onSubmit={(event) => {
-                  event.preventDefault()
-                  void sendCode()
-                }}
-              >
-                <Input
-                  type="email"
-                  required
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  aria-label="Адрес для отправки кода"
-                  value={email}
-                  disabled={mail === "sending"}
-                  onChange={(event) => {
-                    setEmail(event.target.value)
-                    if (mail !== "idle") setMail("idle")
-                  }}
-                  className="sm:flex-1"
-                />
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={mail === "sending" || !email.trim()}
-                >
-                  {mail === "sending" ? "Отправляем…" : "Отправить"}
-                </Button>
-              </form>
-
-              {mailNote ? (
-                <p
-                  role="status"
-                  className={cn(
-                    "mt-2 text-[0.7rem]",
-                    mail === "error"
-                      ? "text-destructive"
-                      : "text-muted-foreground"
-                  )}
-                >
-                  {mailNote}
-                </p>
-              ) : null}
-            </div>
-          ) : null}
         </div>
       </CardContent>
     </Card>
