@@ -30,7 +30,7 @@ export function DefenseMethods() {
     <Section id="defense" veil="strong" label="Защита" screens={1}>
       <div className="flex h-full flex-col justify-center gap-5">
         <header className="flex flex-col gap-1">
-          <SectionRule label="05 — Защита" />
+          <SectionRule label="04 — Защита" />
           <h2 className="font-heading text-xl font-semibold tracking-tight sm:text-2xl">
             Как защитить себя
           </h2>

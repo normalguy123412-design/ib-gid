@@ -14,7 +14,7 @@ export function CommonMistakes() {
   return (
     <Section id="mistakes" veil="strong" label="Частые ошибки">
       <SectionHeader
-        eyebrow="10 — Памятка"
+        eyebrow="08 — Памятка"
         title="Частые ошибки"
         description="Почти все неприятности начинаются с одной из этих шести привычек. Слева — то, что делают чаще всего, справа — что делать вместо этого."
       />

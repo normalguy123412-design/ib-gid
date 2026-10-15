@@ -44,7 +44,7 @@ export function Checklist() {
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-16">
         {/* Основной призыв. */}
         <Parallax speed={0.14} className="flex flex-col items-start gap-5">
-          <SectionRule label="09 — Чек-лист" />
+          <SectionRule label="07 — Чек-лист" />
 
           <h2 className="font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
             Три действия на сегодня

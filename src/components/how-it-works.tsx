@@ -65,7 +65,7 @@ export function HowItWorks() {
     <Section id="how" label="Как это работает" screens={1}>
       <div className="flex h-full flex-col justify-center gap-5">
         <header className="flex flex-col gap-1">
-          <SectionRule label="06 — Как это работает" />
+          <SectionRule label="05 — Как это работает" />
           <h2 className="font-heading text-xl font-semibold tracking-tight sm:text-2xl">
             Что происходит между вами и сервером
           </h2>

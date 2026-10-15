@@ -32,7 +32,7 @@ export function FeaturesBento() {
     <Section id="threats" label="Угрозы" screens={1}>
       <div className="flex h-full flex-col justify-center gap-5">
         <header className="flex flex-col gap-1">
-          <SectionRule label="04 — Угрозы" />
+          <SectionRule label="03 — Угрозы" />
           <h2 className="font-heading text-xl font-semibold tracking-tight sm:text-2xl">
             От чего стоит беречься
           </h2>

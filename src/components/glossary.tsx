@@ -99,7 +99,7 @@ export function Glossary() {
         {/* Рубрика и заголовок стоят в одну строку: три полосы групп важнее
             отдельной шапки, а места по высоте в разделе не хватает. */}
         <header className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <SectionRule label="03 — Словарик" className="w-56 shrink-0" />
+          <SectionRule label="10 — Словарик" className="w-56 shrink-0" />
           <h2 className="font-heading text-xl font-semibold tracking-tight sm:text-2xl">
             Что значат все эти сокращения
           </h2>
