@@ -13,6 +13,7 @@ import { NumbersStrip } from "@/components/numbers-strip"
 import { SecurityDemos } from "@/components/security-demos"
 import { SiteFooter } from "@/components/site-footer"
 import { SiteBackground } from "@/components/site-background"
+import { SiteCrosshair } from "@/components/site-crosshair"
 import { StartHere } from "@/components/start-here"
 
 /**
@@ -43,6 +44,10 @@ import { StartHere } from "@/components/start-here"
 export default function Home() {
   return (
     <>
+      {/* Прицел вместо системной стрелки. Стоит снаружи ленты: он один на
+          весь сайт, а не по одному на панель, и его холст растянут на
+          окно. Настройки и объяснения — в site-crosshair.tsx. */}
+      <SiteCrosshair />
       {/* Лента разделов: прокрутка вниз двигает её вправо.
           Док передаётся внутрь — иначе он не видит прогресс прокрутки и
           считает активный раздел по вертикали, где у всех панелей

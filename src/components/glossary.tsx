@@ -22,19 +22,19 @@ const GROUPS: {
     key: "база",
     title: "Основы",
     hint: "что это такое",
-    dot: "border-sky-500",
+    dot: "border-tone-basics",
   },
   {
     key: "атаки",
     title: "Атаки",
     hint: "от чего беречься",
-    dot: "border-destructive",
+    dot: "border-tone-threat",
   },
   {
     key: "защита",
     title: "Защита",
     hint: "чем закрываются",
-    dot: "border-emerald-500",
+    dot: "border-tone-defense",
   },
 ]
 
@@ -54,11 +54,16 @@ const GROUPS: {
  * слиплись бы в одно пятно. Стекло при этом сохраняется: `backdrop-blur`
  * задаётся в самой карточке и отмены заливкой не имеет, поэтому нити
  * видны сквозь окрашенное стекло.
+ *
+ * Цвета взяты из общей шкалы сайта, а не из палитры Tailwind: основы —
+ * нейтральные, атаки — красные, защита — синие. Те же цвета стоят в
+ * рубриках и в ступенях опасности, поэтому раздел читается как продолжение
+ * сайта, а не как отдельная таблица со своей палитрой.
  */
 const TONES: Record<Category, string> = {
-  база: "border-sky-500/50 bg-sky-500/15 hover:bg-sky-500/25",
-  атаки: "border-destructive/50 bg-destructive/15 hover:bg-destructive/25",
-  защита: "border-emerald-500/50 bg-emerald-500/15 hover:bg-emerald-500/25",
+  база: "border-tone-basics/50 bg-tone-basics/15 hover:bg-tone-basics/25",
+  атаки: "border-tone-threat/50 bg-tone-threat/15 hover:bg-tone-threat/25",
+  защита: "border-tone-defense/50 bg-tone-defense/15 hover:bg-tone-defense/25",
 }
 
 /**

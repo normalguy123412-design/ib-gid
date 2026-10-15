@@ -22,8 +22,13 @@ import styles from "./code-slots.module.css"
  *     вида `.code-slots__slot` — на странице их не должно быть видно;
  *   • иконка успеха — lucide, а не `@hugeicons/react`: в проекте нет
  *     hugeicons, а тянуть новую зависимость ради одной галочки незачем;
- *   • добавлен проп `palette` — набор цветов разом, чтобы вызывающая
- *     сторона не передавала шесть отдельных строк и не путала порядок.
+ *   • цвета берутся из переменных темы прямо в модуле, а не пропсом.
+ *     Раньше палитра выбиралась по текущей теме и подставлялась инлайном:
+ *     сервер темы не знает и отдавал тёмную, а расхождение при гидрации
+ *     React не исправляет. В светлой теме курсор так и оставался
+ *     окрашенным по-тёмному — белым по белому полю. Переменные темы
+ *     переключаются классом на <html>, поэтому цвета верны с первого
+ *     кадра, и передавать их через JS больше не нужно.
  *
  * Само устройство не менялось: невидимое поле ввода лежит поверх ячеек и
  * забирает фокус, буфер обмена и автозаполнение кода из СМС, а ячейки
@@ -58,19 +63,6 @@ const isFull = (slots: string[]) => slots.every(Boolean)
 
 export type CodeSlotsStatus = "idle" | "success" | "error"
 
-/** Цвета под тему сайта. Акцент и цифра противоположной светлоты. */
-export type CodeSlotsPalette = {
-  /** Заливка ячейки при вводе цифры и галочка при успехе. */
-  accentColor: string
-  /** Цвет курсора и подсветки неактивной ячейки. */
-  inkColor: string
-  /** Фон пустой ячейки. */
-  slotColor: string
-  /** Цвет цифры поверх заливки. */
-  digitColor: string
-  dangerColor: string
-}
-
 export function CodeSlots({
   length = 6,
   value,
@@ -82,7 +74,6 @@ export function CodeSlots({
   caret = true,
   disabled = false,
   autoFocus = false,
-  palette,
   slotSize = 44,
   gap = 8,
   radius = 12,
@@ -103,7 +94,6 @@ export function CodeSlots({
   caret?: boolean
   disabled?: boolean
   autoFocus?: boolean
-  palette: CodeSlotsPalette
   slotSize?: number
   gap?: number
   radius?: number
@@ -511,11 +501,6 @@ export function CodeSlots({
       className={`${styles.root} ${className}`.trim()}
       style={
         {
-          "--cs-accent": palette.accentColor,
-          "--cs-ink": palette.inkColor,
-          "--cs-slot": palette.slotColor,
-          "--cs-digit": palette.digitColor,
-          "--cs-danger": palette.dangerColor,
           "--cs-size": `${slotSize}px`,
           "--cs-height": `${height}px`,
           "--cs-gap": `${gap}px`,

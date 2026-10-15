@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { pixelRatioLimit } from "@/lib/quality"
 
 /**
  * TECTEXT — надпись, которая под курсором рассыпается на пунктир.
@@ -806,7 +807,13 @@ export default function TechText({
     const resize = () => {
       width = Math.max(1, container.clientWidth)
       height = Math.max(1, container.clientHeight)
-      dpr = Math.min(window.devicePixelRatio || 1, 2)
+      /*
+        Плотность ограничена, а не взята как есть. Надпись — единственное
+        место, где холст во всю ширину, и на экране с плотностью 3 он
+        рисовался бы в девять раз большим числом точек. Ограничение
+        описано в src/lib/quality.ts.
+      */
+      dpr = Math.min(window.devicePixelRatio || 1, pixelRatioLimit(2))
       canvas.width = Math.round(width * dpr)
       canvas.height = Math.round(height * dpr)
       layoutKey = ""

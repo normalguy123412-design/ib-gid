@@ -10,10 +10,16 @@ import {
 import { cn } from "cn"
 import { threatClassification, threats, type Severity } from "@/lib/content"
 
+/*
+  Ступени опасности идут по убыванию тревоги: красный — критическая,
+  янтарный — высокая, нейтральный — средняя. Отдельной зелени в наборе нет
+  намеренно: зелёный на этом сайте значит «защита», и внутри списка угроз
+  он читался бы как «эта угроза безопасна».
+*/
 const severityStyles: Record<Severity, string> = {
-  Критическая: "bg-destructive/10 text-destructive",
-  Высокая: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  Средняя: "bg-sky-500/15 text-sky-600 dark:text-sky-400",
+  Критическая: "bg-tone-threat/15 text-tone-threat",
+  Высокая: "bg-tone-alert/15 text-tone-alert",
+  Средняя: "bg-tone-basics/15 text-tone-basics",
 }
 
 /**

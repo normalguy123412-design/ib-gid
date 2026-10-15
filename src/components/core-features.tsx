@@ -27,10 +27,13 @@ export function CoreFeatures() {
       {/* Три карточки триады CIA. */}
       <div className="mt-10 grid gap-4 sm:mt-14 sm:grid-cols-2 lg:grid-cols-3">
         {ciaTriad.map((item) => (
-          <Card
-            key={item.title}
-            className="group h-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
-          >
+          /*
+            Подъём и тень при наведении сняты: карточка не кликабельна, а
+            такой отклик обещает переход — человек ведёт курсор, ждёт
+            ссылку и не находит её. Подсветка иконки осталась: это отклик
+            на взгляд, он ничего не обещает.
+          */
+          <Card key={item.title} className="group h-full">
             <CardHeader>
               <span className="mb-1 grid size-11 place-items-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                 <item.icon className="size-5" />

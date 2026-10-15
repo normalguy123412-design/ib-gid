@@ -26,10 +26,12 @@ export function IfItHappens() {
 
       <div className="mt-10 grid gap-4 sm:mt-14 lg:grid-cols-2">
         {ifItHappens.map((block) => (
-          <Card
-            key={block.title}
-            className="group flex transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
-          >
+          /*
+            Подъём и тень при наведении сняты: карточка не кликабельна, а
+            такой отклик обещает переход. Подсветка номера шага осталась —
+            она откликается на взгляд, а не приглашает нажать.
+          */
+          <Card key={block.title} className="group flex">
             <CardHeader>
               <CardTitle>{block.title}</CardTitle>
             </CardHeader>

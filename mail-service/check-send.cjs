@@ -15,7 +15,7 @@
  *     она не нужна, а при настройке — нужна очень.
  *
  *   node check-send.cjs
- *   node check-send.cjs strahsasa08@gmail.com
+ *   node check-send.cjs komu@example.com
  *
  * Читает .env рядом с собой — тот же файл, что и сервис.
  */

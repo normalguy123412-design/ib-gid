@@ -57,11 +57,18 @@ function scorePassword(value: string) {
   return Math.max(0, Math.min(100, score))
 }
 
+/*
+  Оценка стойкости идёт по общей шкале сайта, только в обратную сторону:
+  синий — защита держится, серый — середина, янтарный — слабо, красный —
+  совсем плохо. Ступеней четыре, а не три, как у опасности: между
+  «надёжным» и «слабым» слишком большой разрыв, и без промежуточной
+  ступени половина паролей получала бы одну и ту же подпись.
+*/
 function strengthLabel(score: number) {
-  if (score >= 80) return { text: "Очень надёжный", tone: "bg-emerald-500" }
-  if (score >= 55) return { text: "Надёжный", tone: "bg-lime-500" }
-  if (score >= 30) return { text: "Средний", tone: "bg-amber-500" }
-  return { text: "Слабый", tone: "bg-destructive" }
+  if (score >= 80) return { text: "Очень надёжный", tone: "bg-tone-defense" }
+  if (score >= 55) return { text: "Надёжный", tone: "bg-tone-basics" }
+  if (score >= 30) return { text: "Средний", tone: "bg-tone-alert" }
+  return { text: "Слабый", tone: "bg-tone-threat" }
 }
 
 /**

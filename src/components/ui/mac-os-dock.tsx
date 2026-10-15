@@ -97,7 +97,7 @@ function DockItem({
     >
       <DockTooltip content={tooltip}>{children}</DockTooltip>
       {active ? (
-        <span className="absolute -bottom-2 left-1/2 size-1 -translate-x-1/2 rounded-full bg-sky-400" />
+        <span className="absolute -bottom-2 left-1/2 size-1 -translate-x-1/2 rounded-full bg-tone-defense" />
       ) : null}
     </motion.div>
   )
@@ -127,7 +127,7 @@ function DockButton({
       className={cn(
         "grid size-12 place-items-center rounded-full transition-colors",
         "hover:bg-muted focus-visible:bg-muted focus-visible:outline-none",
-        active ? "text-sky-400" : "text-foreground/70 hover:text-foreground"
+        active ? "text-tone-defense" : "text-foreground/70 hover:text-foreground"
       )}
     >
       {children}
@@ -249,7 +249,7 @@ export function MacOsDock({
             className="h-1 w-56 cursor-grab touch-none rounded-full bg-foreground/10 active:cursor-grabbing"
           >
             <div
-              className="h-full origin-left rounded-full bg-gradient-to-r from-sky-500 via-cyan-400 to-emerald-400"
+              className="h-full origin-left rounded-full bg-tone-defense"
               style={{ transform: `scaleX(${progress})` }}
             />
           </div>

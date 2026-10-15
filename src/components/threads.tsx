@@ -19,6 +19,7 @@
  */
 
 import { useEffect, useRef, type HTMLAttributes } from "react"
+import { isWeakDevice } from "@/lib/quality"
 
 export interface ThreadsProps extends Omit<HTMLAttributes<HTMLDivElement>, "color"> {
   color?: string | [number, number, number]
@@ -199,6 +200,17 @@ void main() {
 }`
 
 const MAX_RENDER_DIM = 1920
+
+/*
+  Тот же предел для слабого прибора.
+
+  Нить — мягкая полоса без мелких деталей, и на 1280 точках по длинной
+  стороне она выглядит так же, как на 1920: разницу видно только на
+  остановленном кадре и только рядом. А работа шейдера считается по числу
+  точек, поэтому здесь она падает больше чем вдвое — самая дешёвая
+  экономия из возможных, потому что за неё не платят видом.
+*/
+const MAX_RENDER_DIM_WEAK = 1280
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 
@@ -428,9 +440,11 @@ export const Threads = ({
     const resize = () => {
       const width = Math.max(1, container.clientWidth)
       const height = Math.max(1, container.clientHeight)
-      const baseDpr = Math.min(window.devicePixelRatio || 1, 2)
+      const weak = isWeakDevice()
+      const limit = weak ? MAX_RENDER_DIM_WEAK : MAX_RENDER_DIM
+      const baseDpr = Math.min(window.devicePixelRatio || 1, weak ? 1 : 2)
       const longest = Math.max(width, height) * baseDpr
-      const dpr = longest > MAX_RENDER_DIM ? (baseDpr * MAX_RENDER_DIM) / longest : baseDpr
+      const dpr = longest > limit ? (baseDpr * limit) / longest : baseDpr
       canvas.width = Math.max(1, Math.round(width * dpr))
       canvas.height = Math.max(1, Math.round(height * dpr))
       state.width = width

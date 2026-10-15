@@ -26,7 +26,7 @@ export function CommonMistakes() {
             className="grid items-start gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-primary/30 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-4"
           >
             <div className="flex items-start gap-2.5">
-              <XIcon className="mt-0.5 size-4 shrink-0 text-destructive" />
+              <XIcon className="mt-0.5 size-4 shrink-0 text-tone-threat" />
               <span className="text-sm text-pretty text-muted-foreground">
                 {item.mistake}
               </span>
@@ -35,7 +35,7 @@ export function CommonMistakes() {
             <ArrowRightIcon className="hidden size-4 shrink-0 text-muted-foreground/60 sm:block" />
 
             <div className="flex items-start gap-2.5 sm:pl-0">
-              <CheckIcon className="mt-0.5 size-4 shrink-0 text-emerald-500" />
+              <CheckIcon className="mt-0.5 size-4 shrink-0 text-tone-defense" />
               <span className="text-sm font-medium text-pretty">
                 {item.instead}
               </span>

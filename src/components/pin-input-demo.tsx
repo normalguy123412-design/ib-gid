@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { toast } from "sonner"
-import { useTheme } from "next-themes"
 import {
   CopyIcon,
   RefreshCwIcon,
@@ -11,37 +10,11 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CodeSlots, type CodeSlotsPalette } from "@/components/code-slots"
+import { CodeSlots } from "@/components/code-slots"
 import {
   CODE_LENGTH,
   useTwoFactorCode,
 } from "@/components/two-factor-code"
-
-/**
- * Цвета ячеек под тему.
- *
- * Акцент и цифра — противоположной светлоты: цифра рисуется поверх
- * заливки ячейки, и при одинаковой светлоте её не прочитать. Остальное
- * взято из палитры сайта: пустая ячейка чуть темнее фона, курсор —
- * цвет основного текста.
- *
- * До гидрарации тема неизвестна — рисуем тёмную, она и так первая.
- */
-const DARK_PALETTE: CodeSlotsPalette = {
-  accentColor: "#0ea5e9",
-  inkColor: "#e4e4e7",
-  slotColor: "#1c1c21",
-  digitColor: "#082f49",
-  dangerColor: "#ef4444",
-}
-
-const LIGHT_PALETTE: CodeSlotsPalette = {
-  accentColor: "#0284c7",
-  inkColor: "#18181b",
-  slotColor: "#e4e4e7",
-  digitColor: "#f0f9ff",
-  dangerColor: "#dc2626",
-}
 
 /**
  * ДЕМО 2: «Двухфакторная аутентификация».
@@ -58,7 +31,6 @@ const LIGHT_PALETTE: CodeSlotsPalette = {
  * стрелки, Home/End и клик по любой ячейке.
  */
 export function PinInputDemo() {
-  const { resolvedTheme } = useTheme()
   // Код общий: письмо с ним уходит из соседней карточки.
   const { secret, refresh } = useTwoFactorCode()
 
@@ -68,7 +40,6 @@ export function PinInputDemo() {
   )
 
   const filled = code.replace(/\D/g, "").length
-  const palette = resolvedTheme === "light" ? LIGHT_PALETTE : DARK_PALETTE
 
   const reset = React.useCallback(() => {
     setCode("")
@@ -126,7 +97,7 @@ export function PinInputDemo() {
             className={
               "font-mono text-2xl font-semibold tracking-[0.4em] " +
               (secret ? "" : "opacity-40 ") +
-              (status === "success" ? "text-emerald-500 " : "") +
+              (status === "success" ? "text-tone-defense " : "") +
               (status === "error" ? "text-destructive" : "")
             }
             aria-live="polite"
@@ -166,7 +137,6 @@ export function PinInputDemo() {
             }}
             onComplete={verify}
             status={status}
-            palette={palette}
             ariaLabel="Введите 6-значный код"
           />
 

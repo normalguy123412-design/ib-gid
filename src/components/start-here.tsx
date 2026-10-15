@@ -30,7 +30,8 @@ export function StartHere() {
         {startSteps.map((step, i) => (
           // Шаги двигаются навстречу прокрутке — лёгкий параллакс.
           <Parallax key={step.title} speed={0.12 - i * 0.09}>
-            <Card className="h-full transition-shadow duration-300 hover:shadow-md">
+            {/* Тень при наведении снята: карточка не кликабельна. */}
+            <Card className="h-full">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
