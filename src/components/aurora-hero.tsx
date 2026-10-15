@@ -4,7 +4,7 @@ import { Counter } from "@/components/counter"
 import { DecryptedText } from "@/components/decrypted-text"
 import { Enter } from "@/components/reveal"
 import { HeroTitle } from "@/components/hero-title"
-import { heroStats, projectGoal, relevance } from "@/lib/content"
+import { heroStats, projectGoal, projectTasks, relevance } from "@/lib/content"
 
 /**
  * HERO-секция: первый экран сайта — первая панель горизонтальной ленты.
@@ -43,18 +43,15 @@ export function AuroraHero() {
 
         <Enter index={1} className="mt-6 w-full">
           {/*
-            Два вводных блока стоят рядом: цель слева, актуальность
-            справа. Раньше они шли друг под другом, и нижний выглядел
-            продолжением верхнего — хотя отвечают они на разные вопросы
-            (зачем работа и почему тема не устарела). Сетка из двух
-            колонок ставит их на один уровень, а на узких экранах
-            сворачивается в столбик.
-
-            Контейнер первого экрана расширен с max-w-4xl до max-w-5xl:
-            в двух колонках текст актуальности иначе ложился бы в девять
-            строк, и блок становился вдвое выше цели.
+            Три вводных блока стоят рядом: цель, задачи работы и
+            актуальность. Раньше их было два, и задачи жили только в
+            тексте самой работы — а на защите цель и задачи читают
+            вместе, первым делом. В третьей колонке текст актуальности
+            остался мелким кеглем: она отвечает на отдельный вопрос
+            («почему тема не устарела»), и вчитываться в неё с первого
+            экрана не нужно.
           */}
-          <div className="mx-auto grid w-full max-w-5xl gap-4 sm:grid-cols-2">
+          <div className="mx-auto grid w-full max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="flex flex-col gap-2 rounded-xl border bg-card/55 px-5 py-4 text-left backdrop-blur-sm">
               <span className="font-mono text-xs font-medium uppercase tracking-widest text-muted-foreground">
                 {projectGoal.label}
@@ -65,6 +62,26 @@ export function AuroraHero() {
             </div>
 
             <div className="flex flex-col gap-2 rounded-xl border bg-card/55 px-5 py-4 text-left backdrop-blur-sm">
+              <span className="font-mono text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                {projectTasks.label}
+              </span>
+              {/* Нумерованный список, а не абзац: задачи читают по
+                  пунктам, и на защите по нему удобно отвечать. */}
+              <ol className="flex flex-col gap-1.5">
+                {projectTasks.items.map((item, i) => (
+                  <li key={item} className="flex gap-2">
+                    <span className="font-mono text-xs leading-5 tabular-nums text-primary">
+                      {i + 1}.
+                    </span>
+                    <span className="text-sm text-pretty text-foreground/85">
+                      {item}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="flex flex-col gap-2 rounded-xl border bg-card/55 px-5 py-4 text-left backdrop-blur-sm sm:col-span-2 lg:col-span-1">
               <span className="font-mono text-xs font-medium uppercase tracking-widest text-muted-foreground">
                 {relevance.label}
               </span>

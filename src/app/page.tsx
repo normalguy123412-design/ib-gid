@@ -1,6 +1,7 @@
 ﻿import { AuroraHero } from "@/components/aurora-hero"
 import { Checklist } from "@/components/checklist"
 import { CommonMistakes } from "@/components/common-mistakes"
+import { Conclusion } from "@/components/conclusion"
 import { CoreFeatures } from "@/components/core-features"
 import { DefenseMethods } from "@/components/defense-methods"
 import { FeaturesBento } from "@/components/features-bento"
@@ -23,7 +24,7 @@ import { StartHere } from "@/components/start-here"
  * потом от чего, потом как, и только потом даём справочник и итог.
  * Рассказ идёт без остановок: старт → понятия → угрозы → защита →
  * как это работает → демо → чек-лист → ошибки → если произошло →
- * словарик → цифры.
+ * словарик → цифры → вывод.
  *
  * Служебные разделы стоят в конце намеренно. Словарик раньше был третьим
  * и разрывал рассказ: из двадцати одного термина одиннадцать описывают
@@ -82,8 +83,12 @@ export default function Home() {
           {/* 10 #glossary — справочник терминов. Стоит после рассказа, а не
               внутри него: сюда заглядывают, когда забыли слово */}
           <Glossary />
-          {/* 11 #numbers — итог работы в цифрах, последняя панель ленты */}
+          {/* 11 #numbers — цифры работы */}
           <NumbersStrip stats={numbers} />
+          {/* 12 #conclusion — вывод: главное в трёх пунктах и возврат
+              к чек-листу. Стоит после цифр: сначала показания, потом
+              короткая сводка, и только после неё подвал */}
+          <Conclusion />
         </main>
 
         {/* Подвал: разделы, ресурсы и копирайт. Последняя панель ленты. */}
