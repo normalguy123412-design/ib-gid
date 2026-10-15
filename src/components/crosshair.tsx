@@ -21,6 +21,7 @@ export type CrosshairProps = {
   targetSelector?: string
   clickPulse?: boolean
   hideCursor?: boolean
+  idleHide?: number
   blendMode?: "normal" | "difference"
   className?: string
   style?: React.CSSProperties
@@ -45,6 +46,7 @@ type Settings = {
   targetSelector: string
   clickPulse: boolean
   hideCursor: boolean
+  idleHide: number
 }
 
 const LINE_STYLES: CrosshairLineStyle[] = ["solid", "dashed", "dotted"]
@@ -84,6 +86,12 @@ const toRgb = (ctx: CanvasRenderingContext2D, color: string): Ink => {
  *     теме в site-crosshair.tsx и приходит сюда готовым значением;
  *   • при системном «меньше движения» прицел не едет за курсором и не
  *     рисует пульсы, а просто стоит на месте;
+ *   • если мышью давно не двигали (idleHide, по умолчанию четыре секунды),
+ *     прицел гаснет сам и возвращается от первого же движения. Системная
+ *     стрелка при этом остаётся скрытой: движение возвращает прицел за
+ *     десятую долю секунды, а вторая стрелка на экране только сбивала бы
+ *     с толку. Отсчёт ведёт таймер, а не цикл отрисовки, — иначе кадры
+ *     крутились бы всё время, пока курсор стоит на месте;
  *   • касания он пропускает: на телефоне и планшете прицела не будет;
  *   • холст лежит в слое с pointer-events: none и помечен aria-hidden,
  *     поэтому клики и чтение с экрана он не перехватывает;
@@ -106,6 +114,7 @@ export const Crosshair = ({
   targetSelector = "a, button, [data-crosshair-target]",
   clickPulse = true,
   hideCursor = false,
+  idleHide = 4000,
   blendMode = "normal",
   className = "",
   style,
@@ -125,6 +134,8 @@ export const Crosshair = ({
     targetSelector,
     clickPulse,
     hideCursor,
+    /* Отрицательное значение выключило бы таймер молча — приводим к нулю. */
+    idleHide: Math.max(0, idleHide),
   }
   const settingsRef = useRef(settings)
   settingsRef.current = settings
@@ -150,6 +161,7 @@ export const Crosshair = ({
       clientX: 0,
       clientY: 0,
       inside: false,
+      idle: false,
       seen: false,
       presence: 0,
       glitch: 0,
@@ -163,6 +175,8 @@ export const Crosshair = ({
     let raf = 0
     let last = 0
     let alive = true
+    /* Таймер молчания мыши. Перезапускается на каждом движении. */
+    let idleTimer = 0
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect()
@@ -376,14 +390,20 @@ export const Crosshair = ({
           : 1 - Math.exp(-dt / (0.008 + s.smoothing * 0.16))
       state.x += (state.tx - state.x) * follow
       state.y += (state.ty - state.y) * follow
-      const wanted = state.inside ? 1 : 0
+      const wanted = state.inside && !state.idle ? 1 : 0
       state.presence +=
         (wanted - state.presence) *
         (reduce ? 1 : 1 - Math.exp(-dt / (wanted ? 0.12 : 0.25)))
       if (Math.abs(wanted - state.presence) < 0.002) state.presence = wanted
       const lock = state.lock
+      /*
+        Скобки вокруг цели гаснут вместе с прицелом: без курсора рамка
+        висела бы сама по себе, показывая наведение, которого не видно.
+      */
       const locked =
-        s.targetEffect === "lock" && state.inside ? state.target : null
+        s.targetEffect === "lock" && state.inside && !state.idle
+          ? state.target
+          : null
       let goal: Box
       if (locked) {
         const box = locked.getBoundingClientRect()
@@ -428,6 +448,22 @@ export const Crosshair = ({
       if (raf || !alive) return
       last = performance.now()
       raf = requestAnimationFrame(tick)
+    }
+
+    /*
+      Молчание мыши. Отсчёт ведёт таймер, а не цикл отрисовки: пока курсор
+      стоит на месте, кадры не рисуются вовсе — счётчик по кадрам просто не
+      тикал бы. По срабатыванию таймера цикл просыпается, гасит прицел за
+      четверть секунды и снова засыпает до следующего движения.
+    */
+    const scheduleIdle = () => {
+      window.clearTimeout(idleTimer)
+      const ms = settingsRef.current.idleHide
+      if (!ms || !alive) return
+      idleTimer = window.setTimeout(() => {
+        state.idle = true
+        wake()
+      }, ms)
     }
 
     const setCursorHidden = (hidden: boolean) => {
@@ -478,7 +514,9 @@ export const Crosshair = ({
 
     const leave = () => {
       state.inside = false
+      state.idle = false
       state.target = null
+      window.clearTimeout(idleTimer)
       setCursorHidden(false)
       wake()
     }
@@ -487,8 +525,10 @@ export const Crosshair = ({
       state.clientX = event.clientX
       state.clientY = event.clientY
       if (event.pointerType === "touch" && event.buttons === 0) return
+      state.idle = false
       enter()
       retarget(event.target)
+      scheduleIdle()
       wake()
     }
 
@@ -531,6 +571,7 @@ export const Crosshair = ({
     return () => {
       alive = false
       cancelAnimationFrame(raf)
+      window.clearTimeout(idleTimer)
       observer.disconnect()
       scope.removeEventListener("pointermove", onMove)
       scope.removeEventListener("pointerdown", onDown)
