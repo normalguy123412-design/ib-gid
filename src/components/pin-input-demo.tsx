@@ -4,8 +4,8 @@ import * as React from "react"
 import { toast } from "sonner"
 import {
   CopyIcon,
+  MailIcon,
   RefreshCwIcon,
-  SmartphoneIcon,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -19,16 +19,16 @@ import {
 /**
  * ДЕМО 2: «Двухфакторная аутентификация».
  *
- * Поле ввода 6-значного кода с имитацией проверки. Ожидаемый код
- * генерируется локально, «серверная» проверка имитируется сравнением
- * строк.
+ * Второй фактор здесь — код из письма. Сайт отправляет настоящее письмо
+ * с тем самым кодом, который нарисован на карточке: такую проверку можно
+ * пройти целиком, не выходя из браузера. «Серверная» проверка при этом
+ * имитируется сравнением строк — она происходит тут же, на странице.
  *
  * Поле ввода — Code Slots из React Bits: одно невидимое поле держит
  * фокус, а шесть ячеек лишь показывают результат. Раньше здесь стояли
  * шесть отдельных полей ввода, и из-за этого вставка кода целиком из
- * буфера и подстановка кода из СМС раскладывались только по одной
- * цифре. Сейчас работают и то, и другое, плюс Backspace, Delete,
- * стрелки, Home/End и клик по любой ячейке.
+ * буфера раскладывалась только по одной цифре. Сейчас работают и вставка,
+ * и Backspace, Delete, стрелки, Home/End и клик по любой ячейке.
  */
 export function PinInputDemo() {
   // Код общий: письмо с ним уходит из соседней карточки.
@@ -57,7 +57,7 @@ export function PinInputDemo() {
       }
       setStatus("error")
       toast.error("Неверный код", {
-        description: "Код не совпал с тем, что показал аутентификатор.",
+        description: "Код не совпал с тем, что пришло в письме.",
       })
     },
     [secret]
@@ -68,10 +68,10 @@ export function PinInputDemo() {
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
           <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-            <SmartphoneIcon className="size-4" />
+            <MailIcon className="size-4" />
           </span>
           <Badge variant="outline" className="shrink-0 font-mono text-[0.7rem]">
-            TOTP · RFC 6238
+            Код из письма
           </Badge>
         </div>
         <CardTitle className="mt-2 text-base">
@@ -79,7 +79,8 @@ export function PinInputDemo() {
         </CardTitle>
         <p className="text-xs text-muted-foreground">
           Второй фактор — то, что не утечёт вместе с базой паролей. Код
-          обновляется каждые 30 секунд, вставка из буфера и стрелки работают.
+          приходит письмом на адрес из соседней карточки; вставка из буфера
+          и стрелки работают.
         </p>
       </CardHeader>
 
@@ -113,7 +114,8 @@ export function PinInputDemo() {
               refresh()
               reset()
               toast.info("Код обновлён", {
-                description: "Новый код действует следующие 30 секунд.",
+                description:
+                  "Если письмо уже ушло, отправьте его заново — уйдёт новый код.",
               })
             }}
           >

@@ -357,7 +357,7 @@ return (
         <div className="flex items-center justify-between gap-4 rounded-lg border bg-muted/40 p-4">
           <Label htmlFor="acc-2fa" className="cursor-pointer text-xs">
             <FingerprintIcon className="size-3.5 text-muted-foreground" />
-            Двухфакторная аутентификация — пароль плюс код из приложения
+            Двухфакторная аутентификация — пароль плюс код из письма
           </Label>
           <Switch
             id="acc-2fa"

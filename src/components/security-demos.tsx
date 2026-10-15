@@ -10,16 +10,17 @@ import { ServerCrashIcon, TerminalIcon } from "lucide-react"
  * самая длинная строка не помещалась в карточку, и блок уезжал под обрез —
  * читалось, что пример недописан.
  */
-const snippet = `// Сервер проверяет код из приложения
-const ok = await totp.verify({
-  token: code,   // 6 цифр из телефона
-  secret: user.totpSecret,
-  window: 1,     // допуск ±30 секунд
+const snippet = `// Сервер сверяет код из письма
+const ok = await codes.match({
+  email: user.email,
+  // 6 цифр из письма
+  code,
+  singleUse: true,
 })
 
 if (!ok) {
   // защита от перебора
-  await rateLimit("2fa:" + user.id)
+  await rateLimit(user.email)
   throw new UnauthorizedError()
 }` as const
 
@@ -70,11 +71,11 @@ export function SecurityDemos() {
         было локальным у второй карточки, связать их было нечем.
       */}
       <TwoFactorCodeProvider>
-        <div className="mt-10 grid items-start gap-6 sm:mt-12 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-10 grid items-start gap-6 sm:mt-12 lg:grid-cols-3">
           <AccountSecurity />
           <PinInputDemo />
 
-          <Card className="gap-5 [--card-spacing:--spacing(6)] lg:col-span-2 xl:col-span-1">
+          <Card className="gap-5 [--card-spacing:--spacing(6)]">
             <CardContent className="flex flex-col gap-4">
               <span className="flex items-center gap-2 text-sm font-medium">
                 <TerminalIcon className="size-4 text-primary" />
@@ -85,8 +86,9 @@ export function SecurityDemos() {
               </pre>
               <p className="flex items-start gap-2.5 text-xs text-pretty text-muted-foreground">
                 <ServerCrashIcon className="mt-0.5 size-3.5 shrink-0" />
-                Секрет хранится только на сервере: утечка базы паролей не даёт
-                войти, а перебор шестизначного кода упирается в счётчик попыток.
+                Код из письма срабатывает один раз: утечка базы паролей войти
+                не даёт, а перебор шестизначного кода упирается в счётчик
+                попыток.
               </p>
             </CardContent>
           </Card>
