@@ -4,12 +4,25 @@ import { cn } from "cn"
 function Card({
   className,
   size = "default",
+  variant = "default",
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & {
+  size?: "default" | "sm"
+  /**
+   * Уровень в иерархии.
+   *
+   * `inset` — для врезок и пояснений, которые стоят рядом с содержимым,
+   * но не равны ему: скругление меньше родительской карточки, заливка
+   * прозрачнее, кольца нет. Без этого все блоки на странице выглядели
+   * одинаковыми, и глаз не мог отличить «главное» от «пояснения».
+   */
+  variant?: "default" | "inset"
+}) {
   return (
     <div
       data-slot="card"
       data-size={size}
+      data-variant={variant}
       className={cn(
         // Стеклянный блок: заливка полупрозрачная, а размытие берёт то,
         // что оказалось под карточкой. За карточками видна крупная
@@ -18,6 +31,9 @@ function Card({
         // них оставлены плотными — иначе текст внутри теряет контраст,
         // а вложенный backdrop-filter стоит дороже всего остального.
         "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card/55 py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 backdrop-blur-sm [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        // Врезка отступается от своих соседей и налезает на рамку изнутри,
+        // поэтому собственной рамки у неё нет — границу задаёт вызывающий.
+        "data-[variant=inset]:rounded-lg data-[variant=inset]:bg-card/25 data-[variant=inset]:ring-0 data-[variant=inset]:[--card-spacing:--spacing(3)]",
         className
       )}
       {...props}

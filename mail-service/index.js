@@ -196,6 +196,66 @@ const escapeHtml = (value) =>
 const randomCode = () =>
   Array.from({ length: 6 }, () => Math.floor(Math.random() * 10)).join("")
 
+/**
+ * Настоящий адрес отправителя запроса.
+ *
+ * X-Forwarded-For подделывается без всяких усилий: заголовок целиком
+ * присылает клиент, а прокси лишь дописывает свой элемент В КОНЕЦ. Поэтому
+ * берётся последний элемент — тот, который добавил уже наш прокси, и на
+ * него клиент повлиять не может.
+ *
+ * Раньше брался первый, то есть как раз подделываемый, и ограничение
+ * частоты обходилось целиком. Проверено на стенде: двенадцать запросов с
+ * разными значениями заголовка прошли все, тогда как одиннадцатый запрос
+ * с честным и одинаковым адресом был отклонён верно. Для почтового шлюза
+ * это означает неограниченную отправку писем от чужого имени.
+ *
+ * Если заголовка нет, берётся адрес сокета: он подделыванию не поддаётся.
+ */
+function clientIp(req) {
+  const forwarded = req.headers["x-forwarded-for"]
+
+  if (forwarded) {
+    const last = String(forwarded)
+      .split(",")
+      .at(-1)
+      ?.trim()
+    if (last) return last
+  }
+
+  return req.socket?.remoteAddress ?? "unknown"
+}
+
+/**
+ * Ключ ограничения по получателю.
+ *
+ * Наивное сравнение адресов обходится Gmail-ом: точки в адресе и почты он
+ * не различает, а всё, что после «плюса», отбрасывает. То есть
+ * `ivan.petrov@gmail.com`, `ivanpetrov@gmail.com` и
+ * `ivan+что-угодно@gmail.com` — один и тот же ящик, а счётчик «три письма
+ * в час на ящик» считал бы их тремя разными получателями.
+ *
+ * У Gmail адрес нормализуется при отправке, поэтому и счётчик обязан
+ * считать его так же. У других доменов точки и «плюс» значимы, там ничего
+ * не трогаем.
+ */
+function normalizeRecipient(email) {
+  const value = String(email).trim().toLowerCase()
+  const at = value.lastIndexOf("@")
+
+  if (at < 0) return value
+
+  const local = value.slice(0, at)
+  const domain = value.slice(at + 1)
+
+  if (domain !== "gmail.com" && domain !== "googlemail.com") return value
+
+  const plus = local.indexOf("+")
+  const withoutTag = plus < 0 ? local : local.slice(0, plus)
+
+  return withoutTag.split(".").join("") + "@" + domain
+}
+
 /* ------------------------------------------------------------------ *
  * Страница самопроверки
  *
@@ -409,6 +469,26 @@ function reply(res, status, payload, origin) {
 }
 
 /**
+ * Заголовки страницы проверки.
+ *
+ * Страницу с формой имеет смысл закрыть от встраивания: иначе злоумышленник
+ * подкладывает её в iframe на своём сайте, а человек поверх неё бессознательно
+ * жмёт «Отправить письмо» — это и есть кликджекинг. Токен в адресе при этом
+ * утекает ещё и через заголовок Referer на любой внешний ресурс со страницы,
+ * поэтому политика Referrer здесь строгая.
+ */
+function pageHeaders(res) {
+  res.setHeader("Cache-Control", "no-store")
+  res.setHeader("X-Content-Type-Options", "nosniff")
+  res.setHeader("X-Frame-Options", "DENY")
+  res.setHeader("Referrer-Policy", "no-referrer")
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'"
+  )
+}
+
+/**
  * Тело запроса.
  *
  * Формат зависит от того, кто спрашивает. Сайт присылает JSON, а обычная
@@ -498,10 +578,8 @@ const server = http.createServer(async (req, res) => {
     // Открытие страницы ничего не отправляет: письмо уходит только по
     // нажатию кнопки. Иначе каждый переход по ссылке слал бы письмо.
     if (req.method !== "POST") {
-      res.writeHead(200, {
-        "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "no-store",
-      })
+      pageHeaders(res)
+      res.setHeader("Content-Type", "text/html; charset=utf-8")
       return res.end(testPage("", null, TEST_TO, ""))
     }
 
@@ -515,10 +593,8 @@ const server = http.createServer(async (req, res) => {
     const email = String(body?.email ?? "").trim()
 
     if (!EMAIL_RE.test(email)) {
-      res.writeHead(400, {
-        "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "no-store",
-      })
+      pageHeaders(res)
+      res.setHeader("Content-Type", "text/html; charset=utf-8")
       return res.end(
         testPage("Адрес не похож на почтовый — проверьте написание.", false, email, "")
       )
@@ -526,13 +602,14 @@ const server = http.createServer(async (req, res) => {
 
     // Те же счётчики, что и у основного эндпоинта: страница проверки
     // не должна быть обходным путём мимо ограничения частоты.
-    const ip = String(req.headers["x-forwarded-for"] ?? "").split(",")[0].trim()
+    const ip = clientIp(req)
 
-    if (!count(hits.ip, ip || "unknown", MAX_PER_IP) || !count(hits.email, email.toLowerCase(), MAX_PER_EMAIL)) {
-      res.writeHead(429, {
-        "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "no-store",
-      })
+    if (
+      !count(hits.ip, ip, MAX_PER_IP) ||
+      !count(hits.email, normalizeRecipient(email), MAX_PER_EMAIL)
+    ) {
+      pageHeaders(res)
+      res.setHeader("Content-Type", "text/html; charset=utf-8")
       return res.end(
         testPage(
           "Слишком много попыток: 10 писем в час с одного адреса и 3 на один ящик. Подождите.",
@@ -564,10 +641,8 @@ const server = http.createServer(async (req, res) => {
       note = `Не отправлено: ${error?.message ?? error}`
     }
 
-    res.writeHead(ok ? 200 : 502, {
-      "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "no-store",
-    })
+    pageHeaders(res)
+    res.setHeader("Content-Type", "text/html; charset=utf-8")
     return res.end(testPage(note, ok, email, code))
   }
 
@@ -602,17 +677,15 @@ const server = http.createServer(async (req, res) => {
     return reply(res, 400, { ok: false, reason: "bad-code" }, origin)
   }
 
-  const ip = String(req.headers["x-forwarded-for"] ?? "")
-    .split(",")[0]
-    .trim()
+  const ip = clientIp(req)
 
-  if (!count(hits.ip, ip || "unknown", MAX_PER_IP)) {
+  if (!count(hits.ip, ip, MAX_PER_IP)) {
     return reply(res, 429, { ok: false, reason: "too-many-from-you" }, origin)
   }
 
   const recipient = email.toLowerCase()
 
-  if (!count(hits.email, recipient, MAX_PER_EMAIL)) {
+  if (!count(hits.email, normalizeRecipient(recipient), MAX_PER_EMAIL)) {
     return reply(res, 429, { ok: false, reason: "too-many-to-email" }, origin)
   }
 

@@ -113,7 +113,12 @@ export function PinInputDemo() {
       </CardHeader>
 
       <CardContent className="flex flex-col gap-5">
-        <div className="flex flex-col items-center gap-2 rounded-xl border bg-muted/40 p-5">
+        {/*
+          Блок «Ожидаемый код» лежит внутри карточки, поэтому его
+          скругление на ступень меньше её собственного — иначе оба
+          уровня читались как один.
+        */}
+        <div className="flex flex-col items-center gap-2 rounded-lg border bg-muted/40 p-5">
           <span className="text-[0.7rem] uppercase text-muted-foreground">
             Ожидаемый код
           </span>

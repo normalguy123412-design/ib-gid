@@ -1,7 +1,7 @@
 "use client"
 
 import { Parallax } from "@/components/parallax"
-import { Section } from "@/components/section"
+import { Section, SectionRule } from "@/components/section"
 import { Counter } from "@/components/counter"
 
 /**
@@ -24,8 +24,13 @@ type Stat = {
 
 export function NumbersStrip({ stats }: { stats: Stat[] }) {
   return (
-    <Section id="numbers" label="В цифрах">
-      <Parallax speed={0.1}>
+    <Section id="numbers" veil="light" label="В цифрах">
+      {/*
+        Рубрики не было — раздел выбивался из ряда, а теперь он стоит в
+        общей шкале, и пропуск между 07 и 09 бросался бы в глаза.
+      */}
+      <Parallax speed={0.1} className="flex flex-col gap-3">
+        <SectionRule label="08 — В цифрах" />
         <h2 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
           Коротко о главном в цифрах
         </h2>

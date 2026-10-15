@@ -1,7 +1,11 @@
-import { Badge } from "@/components/ui/badge"
+"use client"
+
+import * as React from "react"
+import { motion, motionValue } from "motion/react"
 import { DecryptedText } from "@/components/decrypted-text"
 import { Parallax } from "@/components/parallax"
 import { Reveal } from "@/components/reveal"
+import { useHorizontalScroll } from "@/components/horizontal-scroll"
 import { cn } from "cn"
 
 /**
@@ -24,6 +28,7 @@ export function Section({
   screens = 1,
   className,
   contentClassName,
+  veil = "default",
   children,
 }: {
   id?: string
@@ -53,6 +58,15 @@ export function Section({
    * иначе каждый раздел сдвигал бы всю ленту.
    */
   contentClassName?: string
+  /**
+   * Плотность вуали поверх фоновых нитей.
+   *
+   * Общая вуаль одна на весь сайт, и текст читается везде одинаково. Но
+   * содержание панелей разное: где-то строки мелким шрифтом и таблицы,
+   * где-то одно крупное число. Насыщенным разделам фон шумит, а пустым
+   * не хватает. Проп сдвигает плотность в ту или другую сторону.
+   */
+  veil?: "light" | "default" | "strong"
   children?: React.ReactNode
 }) {
   return (
@@ -69,13 +83,19 @@ export function Section({
         >
           {/*
             Подпись раскрывается из случайных символов, когда панель
-            доезжает до экрана. Работает при полупрозрачности 5,5%, потому
+            доезжает до экрана. Работает при полупрозрачности 5%, потому
             что меняет сами символы, а не затирает заливку — в отличие от
             TechText, которому для эффекта нужен непрозрачный цвет.
+
+            Разрядка раньше была отрицательной — унаследована от обычных
+            заголовков, где она делает текст плотнее. На буквах в 16vw
+            это давало обратный эффект: соседние буквы наезжали друг на
+            друга и слово расплывалось в пятно, а на стыке двух панелей
+            сливались уже слова. Теперь разрядка в плюс и кегль меньше.
           */}
           <DecryptedText
             text={label}
-            className="font-heading text-[16vw] leading-none font-bold tracking-tight text-foreground/[0.055]"
+            className="font-heading text-[13vw] leading-none font-bold tracking-[0.08em] text-foreground/[0.05]"
           />
         </span>
       ) : null}
@@ -90,6 +110,17 @@ export function Section({
         aria-hidden
         className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-background to-transparent"
       />
+
+      {/* Вуаль поверх фоновых нитей — см. проп `veil`. */}
+      {veil !== "default" ? (
+        <div
+          aria-hidden
+          className={
+            "pointer-events-none absolute inset-0 " +
+            (veil === "light" ? "bg-veil-light" : "bg-veil-strong")
+          }
+        />
+      ) : null}
 
       <div
         className={cn(
@@ -115,7 +146,146 @@ export function Section({
 }
 
 /**
- * Заголовок секции: рубрика (eyebrow), заголовок и описание.
+ * Насколько прочитан раздел, в котором стоит элемент. 0 — панель ещё
+ * въезжает справа, 1 — её левый край дошёл до левого края экрана.
+ *
+ * Считается от общего прогресса ленты: панель начинает наполняться, когда
+ * её правый край входит в кадр, и заканчивает, когда левый выходит.
+ *
+ * До измерения диапазона берётся весь прогресс ленты — на первом кадре это
+ * единственное разумное значение, а измерение случается сразу после
+ * монтирования, поэтому правки не видно.
+ */
+/**
+ * Насколько прочитан раздел, в котором стоит элемент. 0 — панель ещё
+ * въезжает справа, 1 — её левый край дошёл до левого края экрана.
+ *
+ * Считается от общего прогресса ленты. Диапазон измеряется один раз и
+ * дальше пересчитывается только при пересборке трека, а значение берётся
+ * прямой подпиской на движок прогресса.
+ *
+ * Раньше здесь стоял `useTransform` с диапазоном, который менялся после
+ * монтирования: полоса оставалась схлопнутой в ноль во всех разделах,
+ * и это было видно только на снимке — ни типы, ни линтер не ловят
+ * неверное движное значение. Здесь всё считается руками, шаг за шагом.
+ */
+function usePanelFill(ref: React.RefObject<HTMLElement | null>) {
+  const scroll = useHorizontalScroll()
+  const fill = React.useMemo(() => motionValue(0), [])
+
+  React.useEffect(() => {
+    if (!scroll) return
+
+    // Панель ищем вверх по дереву: элемент правила стоит внутри раздела,
+    // а передавать ему ссылку на панель пришлось бы через контекст.
+    const panel = ref.current?.closest<HTMLElement>("[data-panel]")
+    if (!panel) return
+
+    let start = 0
+    let end = 1
+
+    const apply = (value: number) => {
+      // Вырожденный диапазон бывает у раздела шириной в экран в начале
+      // ленты: делить на ноль нельзя, решаем сравнением.
+      if (end - start <= 0) {
+        fill.set(value >= end ? 1 : 0)
+        return
+      }
+      const t = (value - start) / (end - start)
+      fill.set(t < 0 ? 0 : t > 1 ? 1 : t)
+    }
+
+    const measure = () => {
+      const maxX = scroll.maxX
+
+      if (maxX <= 0) {
+        // Ленте некуда ехать — весь сайт виден целиком, читать нечего.
+        start = 0
+        end = 1
+        return
+      }
+
+      // offsetParent панели — сам трек ленты: он помечен relative, поэтому
+      // offsetLeft отсчитывается от начала трека, а не от окна.
+      const left = panel.offsetLeft
+      const width = window.innerWidth
+
+      start = (left - width) / maxX
+      end = left / maxX
+    }
+
+    measure()
+    apply(scroll.progress.get())
+
+    const unsubscribe = scroll.progress.on("change", apply)
+    const onResize = () => {
+      measure()
+      apply(scroll.progress.get())
+    }
+
+    window.addEventListener("resize", onResize)
+    return () => {
+      unsubscribe()
+      window.removeEventListener("resize", onResize)
+    }
+  }, [ref, scroll, fill])
+
+  return fill
+}
+
+/**
+ * Рубрика раздела как полоса-прогресса.
+ *
+ * Раньше это была плашка с надписью вида «07 — Демо» над каждым заголовком:
+ * ровно та обвязка, которая выдаёт сгенерированную страницу. Теперь надпись
+ * стоит не над заголовком, а на одной линии с ним, и эта линия заполняется
+ * по мере того, как панель проезжает экран, — номер перестаёт быть
+ * украшением и становится показанием прибора.
+ *
+ * Заполнение подписано `aria-hidden`: прогресс и так считывается по самому
+ * разделу, а читать вслух линию, которая едет мимо, не нужно.
+ */
+export function SectionRule({
+  label,
+  className,
+}: {
+  label: string
+  /**
+   * Ширина полосы задаётся внешним контейнером: в разделе, где шапка
+   * намеренно стоит в одну строку с заголовком и высоты не хватает,
+   * полосу подрезают до нескольких сантиметров.
+   */
+  className?: string
+}) {
+  const ref = React.useRef<HTMLSpanElement>(null)
+  const fill = usePanelFill(ref)
+
+  return (
+    <div className={cn("flex items-center gap-3", className)}>
+      <span
+        ref={ref}
+        className="shrink-0 font-mono text-[0.65rem] tracking-[0.2em] text-muted-foreground uppercase"
+      >
+        {label}
+      </span>
+      {/*
+        Минимум ширины обязателен: в словарике правило подрезано, чтобы
+        шапка осталась в одну строку, и без минимума линия схлопывалась
+        в несколько пикселей — её было видно, что она есть, но прочитать
+        заполнение по ней было нельзя.
+      */}
+      <div aria-hidden className="h-px min-w-10 flex-1 bg-border/50">
+        <motion.div
+          style={{ scaleX: fill }}
+          className="h-full w-full origin-left bg-primary"
+        />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Заголовок секции: рубрика-полоса (eyebrow), заголовок и описание.
  * `align="center"` используется в секциях, где шапка центрируется.
  */
 export function SectionHeader({
@@ -138,9 +308,7 @@ export function SectionHeader({
           align === "center" ? "items-center text-center" : "max-w-2xl"
         )}
       >
-        <Badge variant="outline" className="font-mono text-[0.7rem] uppercase">
-          {eyebrow}
-        </Badge>
+        <SectionRule label={eyebrow} />
         <h2 className="font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
           {title}
         </h2>

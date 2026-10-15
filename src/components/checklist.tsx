@@ -6,9 +6,8 @@ import {
   KeyRoundIcon,
   ListChecksIcon,
 } from "lucide-react"
-import { Section } from "@/components/section"
+import { Section, SectionRule } from "@/components/section"
 import { Parallax } from "@/components/parallax"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -41,13 +40,11 @@ const STEPS = [
 
 export function Checklist() {
   return (
-    <Section id="checklist" label="Три действия">
+    <Section id="checklist" veil="strong" label="Три действия">
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-16">
         {/* Основной призыв. */}
         <Parallax speed={0.14} className="flex flex-col items-start gap-5">
-          <Badge variant="outline" className="font-mono text-[0.7rem] uppercase">
-            09 — Чек-лист
-          </Badge>
+          <SectionRule label="09 — Чек-лист" />
 
           <h2 className="font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
             Три действия на сегодня
@@ -90,9 +87,14 @@ export function Checklist() {
 
               <ol className="flex flex-col gap-3">
                 {STEPS.map((step) => (
+                  /*
+                    Скругление меньше, чем у карточки-родителя. Раньше
+                    ряд внутри карточки повторял её радиус, и оба уровня
+                    выглядели как один — вложенность приходилось угадывать.
+                  */
                   <li
                     key={step.n}
-                    className="flex items-start gap-3 rounded-xl border bg-muted/30 p-4"
+                    className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4"
                   >
                     <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-primary font-mono text-xs font-semibold text-primary-foreground">
                       {step.n}
@@ -110,7 +112,10 @@ export function Checklist() {
           </Card>
 
           {/* Врезка-пояснение. */}
-          <Card className="border-dashed">
+          <Card
+            variant="inset"
+            className="border border-dashed border-border/50"
+          >
             <CardContent className="flex items-start gap-3 pt-6">
               <InfoIcon className="mt-0.5 size-4 shrink-0 text-primary" />
               <p className="text-xs text-pretty text-muted-foreground">

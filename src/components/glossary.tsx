@@ -1,5 +1,4 @@
-﻿import { Section } from "@/components/section"
-import { Badge } from "@/components/ui/badge"
+import { Section, SectionRule } from "@/components/section"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "cn"
 import { glossary } from "@/lib/content"
@@ -95,17 +94,12 @@ const COLUMNS: Record<Category, string> = {
  */
 export function Glossary() {
   return (
-    <Section id="glossary" label="Словарик" screens={1}>
+    <Section id="glossary" veil="strong" label="Словарик" screens={1}>
       <div className="flex h-full flex-col justify-center gap-4">
         {/* Рубрика и заголовок стоят в одну строку: три полосы групп важнее
             отдельной шапки, а места по высоте в разделе не хватает. */}
         <header className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <Badge
-            variant="outline"
-            className="w-fit font-mono text-[0.7rem] uppercase"
-          >
-            03 — Словарик
-          </Badge>
+          <SectionRule label="03 — Словарик" className="w-56 shrink-0" />
           <h2 className="font-heading text-xl font-semibold tracking-tight sm:text-2xl">
             Что значат все эти сокращения
           </h2>

@@ -1,7 +1,10 @@
 "use client"
 
+import * as React from "react"
+import { motion, motionValue, useTransform } from "motion/react"
 import { useTheme } from "next-themes"
 import { Threads } from "@/components/threads"
+import { useHorizontalScroll } from "@/components/horizontal-scroll"
 
 /**
  * ФОН ВСЕГО САЙТА — нити, расступающиеся под курсором.
@@ -32,42 +35,73 @@ import { Threads } from "@/components/threads"
  * Слои: нити лежат под затемнением, а не поверх текста.
  */
 const THREAD_COLORS = {
-  dark: { color: "#5b7ba6", accentColor: "#a3c0e2" },
-  light: { color: "#7e9ac0", accentColor: "#3d5f8c" },
+  dark: { color: "#2b3a4d", accentColor: "#48597a" },
+  light: { color: "#9fb0c6", accentColor: "#6d829e" },
 } as const
 
 export function SiteBackground() {
   const { resolvedTheme } = useTheme()
-
-  // До гидрации тема неизвестна. Тёмная — запасной вариант: первым
-  // показывается именно она, лишней перерисовки фона не будет.
   const palette = resolvedTheme === "light" ? THREAD_COLORS.light : THREAD_COLORS.dark
 
+  /*
+    Параллакс.
+
+    Холст шире экрана и уезжает ВМЕСТЕ с лентой, но медленнее: содержимое
+    за проход всей ленты проезжает тринадцать экранов, а фон — около
+    одного. Разница и создаёт глубину: два слоя двигаются не в одну
+    сторону с одной скоростью, и глаз читает их как разные расстояния.
+
+    Уезжать есть куда только потому, что холст шире вьюпорта: при равной
+    ширине он просто упёрся бы в край и прокрутка тянула бы его рывками
+    обратно. Запас по ширине — ровно на величину хода.
+  */
+  const scroll = useHorizontalScroll()
+  const still = React.useMemo(() => motionValue(0), [])
+  const drift = useTransform(scroll?.progress ?? still, [0, 1], ["0%", "13%"])
+
   return (
-    <div aria-hidden className="absolute inset-0">
-      <Threads
-        {...palette}
-        distance={0.9}
-        lineCount={48}
-        softness={2.4}
-        thickness={0.55}
-        amplitude={1.15}
-        speed={0.35}
-        opacity={0.75}
-        fade={0.12}
-        enableMouseInteraction
-        parting={0.35}
-      />
+    <div aria-hidden className="absolute inset-0 overflow-hidden">
+      <motion.div
+        style={{ x: drift }}
+        className="absolute inset-y-0 -left-[13%] w-[126%]"
+      >
+        <Threads
+          {...palette}
+          // Нити стали тоньше и гуще: раньше поле читалось как сплошная
+          // заливка, а не как переплетение. Расстояние уменьшено, поэтому
+          // поле уходит вглубь быстрее и дальше, чем раньше.
+          distance={0.72}
+          lineCount={64}
+          softness={3.1}
+          thickness={0.42}
+          amplitude={0.95}
+          // Медленнее и мягче: раньше нити заметно дёргались под курсором,
+          // а за ними стоит текст, и движение сбивало чтение.
+          speed={0.28}
+          parting={0.26}
+          fade={0.12}
+          // Нити приглушены почти до невидимости: фон должен читаться
+          // как почти чёрный, а текстура — как то, что едва проступает
+          // сквозь темноту. Заметная текстура спорит с текстом.
+          opacity={0.62}
+          enableMouseInteraction
+        />
+      </motion.div>
 
       {/*
-        Затемнение. Оно одинаковое для всех панелей: разделы набраны
-        плотно — словарик, чек-лист, памятка, — и текст должен читаться
-        поверх текстуры одинаково везде. Полупрозрачность подобрана так,
-        чтобы нити оставались заметными, но не мешали: на чёрном это
-        примерно шесть процентов от белого, разница с фоном для текста
-        в двадцать раз.
+        Слои снизу вверх: вуаль, тёплый свет, белый ободок.
+
+        Раньше свет лежал под вуалью — и пропадал: вуаль на 68%
+        оставляла от него меньше трети. Подняли над вуалью и убавили
+        прозрачность, иначе тёплое пятно тинило бы текст.
+
+        Ободок сверху: он и есть то, что держит взгляд внутри кадра.
+        Свет под ним, а не над — иначе края получили бы тёплый отлив там,
+        где теперь должен быть нейтральный белый.
       */}
-      <div className="absolute inset-0 bg-background/55" />
+      <div className="absolute inset-0 bg-background/68" />
+      <div className="absolute inset-0 bg-depth-glow" />
+      <div className="absolute inset-0 bg-depth-rim" />
     </div>
   )
 }

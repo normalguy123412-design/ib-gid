@@ -1,4 +1,4 @@
-﻿import { Section, SectionHeader } from "@/components/section"
+import { Section, SectionHeader } from "@/components/section"
 import { AccountSecurity } from "@/components/account-security"
 import { PinInputDemo } from "@/components/pin-input-demo"
 import { TwoFactorCodeProvider } from "@/components/two-factor-code"
@@ -49,6 +49,7 @@ export function SecurityDemos() {
   return (
     <Section
       id="demos"
+      veil="strong"
       label="Демо"
       contentClassName="px-6 py-14 sm:px-10"
     >

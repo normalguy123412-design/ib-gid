@@ -1,4 +1,4 @@
-﻿import { Section } from "@/components/section"
+import { Section, SectionRule } from "@/components/section"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -32,12 +32,7 @@ export function FeaturesBento() {
     <Section id="threats" label="Угрозы" screens={1}>
       <div className="flex h-full flex-col justify-center gap-5">
         <header className="flex flex-col gap-1">
-          <Badge
-            variant="outline"
-            className="w-fit font-mono text-[0.7rem] uppercase"
-          >
-            04 — Угрозы
-          </Badge>
+          <SectionRule label="04 — Угрозы" />
           <h2 className="font-heading text-xl font-semibold tracking-tight sm:text-2xl">
             От чего стоит беречься
           </h2>

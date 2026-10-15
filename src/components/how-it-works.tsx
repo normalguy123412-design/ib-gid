@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import {
   BadgeCheckIcon,
@@ -7,8 +7,7 @@ import {
   RadarIcon,
   SirenIcon,
 } from "lucide-react"
-import { Section } from "@/components/section"
-import { Badge } from "@/components/ui/badge"
+import { Section, SectionRule } from "@/components/section"
 
 /**
  * СЕКЦИЯ «КАК ЭТО ЗАЩИЩЕНО» (#how).
@@ -66,12 +65,7 @@ export function HowItWorks() {
     <Section id="how" label="Как это работает" screens={1}>
       <div className="flex h-full flex-col justify-center gap-5">
         <header className="flex flex-col gap-1">
-          <Badge
-            variant="outline"
-            className="w-fit font-mono text-[0.7rem] uppercase"
-          >
-            06 — Как это работает
-          </Badge>
+          <SectionRule label="06 — Как это работает" />
           <h2 className="font-heading text-xl font-semibold tracking-tight sm:text-2xl">
             Что происходит между вами и сервером
           </h2>

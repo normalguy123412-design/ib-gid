@@ -47,7 +47,10 @@ export function StartHere() {
         ))}
       </div>
 
-      <Card className="mt-4 border-dashed">
+      <Card
+            variant="inset"
+            className="mt-4 border border-dashed border-border/50"
+          >
         <CardContent className="flex flex-col gap-2 pt-6 sm:flex-row sm:items-center sm:gap-4">
           <CompassIcon className="size-5 shrink-0 text-primary" />
           <p className="text-pretty text-muted-foreground">
